@@ -4,6 +4,8 @@ import com.easyplan._global.infra.jpa.BaseEntity;
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.domain.account.exception.AccountException;
 import com.easyplan.finance.domain.account.exception.AccountExceptionCode;
+import com.easyplan.finance.domain.account.request.AccountCreateRequest;
+import com.easyplan.finance.domain.account.request.AccountUpdateRequest.AccountInfoUpdate;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -12,12 +14,21 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "account")
+@Table(
+		name = "account",
+		uniqueConstraints = {
+				@UniqueConstraint(
+						name = "uk_category_id_account_name",
+						columnNames = {"category_id", "account_name"}
+				)
+		}
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Account extends BaseEntity {
@@ -48,10 +59,7 @@ public class Account extends BaseEntity {
 	@Column(name = "account_description")
 	private String accountDescription;
 	
-	@Column(name = "payment", nullable = false)
-	private boolean payment;
-	
-	public static Account create(Long ledgerId, Long categoryId, Long optionId, String accountName, String accountDescription, boolean payment) {
+	public static Account create(Long ledgerId, Long categoryId, Long optionId, String accountName, String accountDescription) {
 		Account account = new Account();
 		
 		account.accountPublicId = PublicId.create();
@@ -60,18 +68,32 @@ public class Account extends BaseEntity {
 		account.optionId = optionId;
 		account.accountName = accountName;
 		account.accountDescription = accountDescription;
-		account.payment = payment;
 		
 		account.status = AccountStatus.ACTIVE;
 		
 		return account;
 	}
 	
-	public void changeAccountInfo(String accountName, String accountDescription, Long optionId) {
+	public static Account create(Long ledgerId, Long categoryId, Long optionId, AccountCreateRequest accountCreate) {
+		Account account = new Account();
+		
+		account.accountPublicId = PublicId.create();
+		account.ledgerId = ledgerId;
+		account.categoryId = categoryId;
+		account.optionId = optionId;
+		account.accountName = accountCreate.accountName();
+		account.accountDescription = accountCreate.accountDescription();
+		
+		account.status = AccountStatus.ACTIVE;
+		
+		return account;
+	}
+	
+	public void changeAccountInfo(Long optionId, AccountInfoUpdate accountInfo) {
 		isActive();
 		
-		this.accountName = accountName;
-		this.accountDescription = accountDescription;
+		this.accountName = accountInfo.accountName();
+		this.accountDescription = accountInfo.accountDescription();
 		this.optionId = optionId;
 	}
 	

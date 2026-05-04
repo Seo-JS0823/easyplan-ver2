@@ -34,7 +34,7 @@ public enum AccountOptionTemplate {
 	public static List<AccountOption> defaultOptions() {
 		return Arrays.asList(AccountOptionTemplate.values()).stream()
 				.map(option -> {
-					return AccountOption.create(option.name(), option.getOptionName(), option.getAccountType());
+					return AccountOption.create(option, option.getOptionName(), option.getAccountType());
 				})
 				.toList();
 	}

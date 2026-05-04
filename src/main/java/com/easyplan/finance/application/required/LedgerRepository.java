@@ -13,6 +13,8 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
 	
 	boolean existsByOwnerIdAndName(Long ownerId, String name);
 	
+	boolean existsByOwnerIdAndLedgerPublicId(Long ownerId, PublicId ledgerPublicId);
+	
 	Ledger findByLedgerPublicId(PublicId ledgerPublicId);
 	
 	Optional<Ledger> findByLedgerPublicIdAndOwnerId(PublicId ledgerPublicId, Long ownerId);

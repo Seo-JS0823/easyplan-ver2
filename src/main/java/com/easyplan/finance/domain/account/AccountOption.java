@@ -18,7 +18,8 @@ import lombok.NoArgsConstructor;
 public class AccountOption extends BaseEntity {
 
 	@Column(name = "option_code", nullable = false, updatable = false)
-	private String optionCode;
+	@Enumerated(EnumType.STRING)
+	private AccountOptionTemplate optionCode;
 	
 	@Column(name = "option_name", nullable = false, length = 15, updatable = false)
 	private String optionName;
@@ -27,7 +28,7 @@ public class AccountOption extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
 	
-	public static AccountOption create(String optionCode, String optionName, AccountType accountType) {
+	public static AccountOption create(AccountOptionTemplate optionCode, String optionName, AccountType accountType) {
 		AccountOption accountOption = new AccountOption();
 		
 		accountOption.optionCode = optionCode;

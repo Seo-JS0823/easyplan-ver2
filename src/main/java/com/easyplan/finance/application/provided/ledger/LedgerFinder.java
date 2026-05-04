@@ -9,7 +9,11 @@ import com.easyplan.finance.domain.ledger.Ledger;
 public interface LedgerFinder {
 	List<Ledger> findByOwnerId(Long ownerId);
 	
+	Optional<Ledger> findByid(Long ledgerId);
+	
 	boolean existsByOwnerIdAndName(Long ownerId, String name);
+	
+	boolean existsByOwnerIdAndLedgerPublicId(Long ownerId, PublicId ledgerPublicId);
 	
 	List<Ledger> findMyLedgers(PublicId memberPublicId);
 	

@@ -65,4 +65,14 @@ public class LedgerFindService implements LedgerFinder {
 		return ledgerRepo.existsByOwnerIdAndName(ownerId, name);
 	}
 
+	@Override
+	public boolean existsByOwnerIdAndLedgerPublicId(Long ownerId, PublicId ledgerPublicId) {
+		return ledgerRepo.existsByOwnerIdAndLedgerPublicId(ownerId, ledgerPublicId);
+	}
+
+	@Override
+	public Optional<Ledger> findByid(Long ledgerId) {
+		return ledgerRepo.findById(ledgerId);
+	}
+
 }

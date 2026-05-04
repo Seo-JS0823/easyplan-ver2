@@ -60,7 +60,7 @@ public class LedgerCommandService implements LedgerCommand {
 	private List<Account> memberSelectedAccounts(Long ledgerId, List<AccountCategory> accountCategory, LedgerCreateRequest ledgerCreate) {
 		Map<AccountOptionTemplate, Long> optionMap = accountOptionRepo.findAll().stream()
 				.collect(Collectors.toMap(
-						option -> AccountOptionTemplate.valueOf(option.getOptionCode()),
+						AccountOption::getOptionCode,
 						AccountOption::getId
 				));
 		
@@ -82,7 +82,7 @@ public class LedgerCommandService implements LedgerCommand {
 						throw new IllegalStateException("가계부 생성중 시스템 에러가 발생했습니다. 잠시 후 다시 시도해주세요.");
 					}
 					
-					return Account.create(ledgerId, categoryId, optionId, acc.getAccountName(), null, acc.isPayment());
+					return Account.create(ledgerId, categoryId, optionId, acc.getAccountName(), null);
 				})
 				.toList();
 		

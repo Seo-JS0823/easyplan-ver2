@@ -76,4 +76,13 @@ public class LedgerPolicyService implements LedgerPolicy {
 		}
 	}
 
+	@Override
+	public void validateForLedgerOwnership(PublicId memberPublicId, PublicId ledgerPublicId) {
+		Long ownerId = memberFinder.findByPublicId(memberPublicId).getId();
+		
+		if(!ledgerFinder.existsByOwnerIdAndLedgerPublicId(ownerId, ledgerPublicId)) {
+			throw new LedgerException(LedgerExceptionCode.LEDGER_NOT_FOUND); 
+		}
+	}
+	
 }
