@@ -1,0 +1,41 @@
+services:
+ backend:
+   build: ./backend
+   container_name: easyplan-backend
+   ports:
+     - '8080:8080'
+   environment:
+     DB_HOST: postgres
+     DB_PORT: ${DB_PORT}
+     DB_NAME: easyplan
+     DB_USER: ${DB_USER}
+     DB_PASSWORD: ${DB_PASSWORD}
+
+     REDIS_HOST: ${REDIS_HOST}
+     REDIS_PORT: ${REDIS_PORT}
+   depends_on:
+     - postgres
+     - redis
+
+  postgres:
+    image: 'postgres:17'
+    container_name: easyplan-postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+  redis:
+    image: 'redis:latest'
+    container_name: easyplan-redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT}:6379"
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,55 @@
+root.path: http://localhost:8080
+
+spring:
+  application.name: easyplan
+  config.import: optional:file:.env[.properties]
+#  datasource:
+#    url: jdbc:postgresql://localhost:${DB_PORT}/${DB_NAME}
+#    username: ${DB_USER}
+#    password: ${DB_PASSWORD}
+#    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+  docker:
+    compose:
+      enabled: true
+      lifecycle-management: start-only
+      file: compose.local.yaml
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            enable: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+            port: ${MAIL_PORT}
+
+jwt:
+  secret: ${SECRET}
+  times:
+    access: 18000000
+    refresh: 604800000
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+        cache: trace

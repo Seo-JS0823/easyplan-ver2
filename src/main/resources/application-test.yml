@@ -1,0 +1,53 @@
+root.path: http://localhost:8080
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        '[format_sql]': true
+#        '[generate_statistics]': true
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            enable: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+            port: ${MAIL_PORT}
+
+jwt:
+  secret: ${SECRET}
+  times:
+    access: 18000000
+    refresh: 604800000
+
+#logging:
+#  level:
+#    '[org.hibernate.SQL]': DEBUG
+#    '[org.hibernate.orm.jdbc.bind]': TRACE
+#    '[org.hibernate.stat]': DEBUG
