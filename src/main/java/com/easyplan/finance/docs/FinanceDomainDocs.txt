@@ -8,11 +8,11 @@
   - LedgerCommand Interface / createLedger()
 
 요청 파라미터
-  - 멤버 식별자, 가계부 타입, 가계부 이름, 가계부 설명, 사용자 선택 Template 상수 리스트
-  - (publicId, type, name, description, accounts)
+  - 멤버 식별자(액세스 토큰 쿠키), 가계부 타입, 가계부 이름, 가계부 설명, 사용자 선택 Template 상수 리스트
+  - (memberPublicId, type, name, description, accounts)
 
 검증 정책
-  - LedgerPolicy Interface / canCreate()
+  - LedgerPolicy Interface / validateForLedgerCreate()
   - 회원 상태를 검증한다. isActive()
   - 가계부 생성 한도를 검증한다.
 

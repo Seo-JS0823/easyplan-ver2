@@ -18,6 +18,6 @@ public interface LedgerCommand {
 	Ledger updateLedgerFiscalDay
 		(PublicId memberPublicId, PublicId ledgerPublicId, LedgerUpdateRequest.LedgerFiscalDayUpdate ledgerFiscal);
 	
-	Ledger reactivte
+	Ledger reactivate
 		(PublicId memberPublicId, PublicId ledgerPublicId);
 }

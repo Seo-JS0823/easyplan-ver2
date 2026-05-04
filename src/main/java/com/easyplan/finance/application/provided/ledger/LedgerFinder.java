@@ -17,9 +17,11 @@ public interface LedgerFinder {
 	
 	List<Ledger> findMyLedgers(PublicId memberPublicId);
 	
-	Ledger findByLedgerPublicId(PublicId ledgerPublicId);
+	Ledger findByLedgerPublicId(PublicId memberPublicId, PublicId ledgerPublicId);
 	
 	Optional<Ledger> findByLedgerPublicIdAndOwnerId(PublicId ledgerPublicId, Long ownerId);
 	
 	int countByOwnerId(Long ownerId);
+
+	Optional<Ledger> findByOwnerIdAndLedgerPublicId(Long id, PublicId ledgerPublicId);
 }

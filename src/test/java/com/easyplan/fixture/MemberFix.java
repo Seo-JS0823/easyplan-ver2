@@ -6,8 +6,10 @@ import java.time.temporal.ChronoUnit;
 
 import org.springframework.boot.test.context.TestComponent;
 
+import com.easyplan._shared.domain.PublicId;
 import com.easyplan._shared.time.UTC;
 import com.easyplan.member.application.provided.MemberPolicy;
+import com.easyplan.member.application.provided.MemberSummary;
 import com.easyplan.member.application.required.MemberRepository;
 import com.easyplan.member.domain.Member;
 import com.easyplan.member.domain.Nickname;
@@ -92,6 +94,11 @@ public class MemberFix {
 				if(nickname.equals("Easyplan")) {
 					throw new MemberException(MemberExceptionCode.DUPLICATE_NICKNAME);
 				}
+			}
+
+			@Override
+			public MemberSummary canUseService(PublicId memberPublicId) {
+				return null;
 			}
 		};
 	}

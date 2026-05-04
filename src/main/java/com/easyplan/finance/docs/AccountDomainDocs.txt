@@ -8,4 +8,46 @@
   - AccountCommand Interface / createAccount()
   
 요청 파라미터
-  - 
+  - 멤버 식별자(액세스 토큰 쿠키), 가계부 식별자, 계정 유형, 계정 옵션, 계정 이름, 계정 설명
+  - (memberPublicId, ledgerPublicId, accountType, optionCode, accountName, accountDescription)
+  
+검증 정책
+  - LedgerPolicy Interface / validateForLedgerOwnership()
+  - AccountPolicy Interface / validateForCreateAccount()
+  - 회원이 서비스를 이용가능한 상태인지 검증한다. canUseService()
+  - 계정을 추가하려는 가계부가 자신의 소유인지 검증한다.
+  - 생성하려는 계정 유형에 맞는 계정 옵션인지 검증한다.
+  - 해당 유형의 계정 항목중 동일한 이름이 있는지 검사한다.
+  
+프로세스
+  - 1. 멤버 정보가 포함된 토큰과 가계부 식별자와 생성하려는 계정 정보 Request를 받는다.
+  - 2. 위 검증을 거쳐 Request로 받은 생성 정보로 계정 정보 객체를 생성한다.
+  - 3. 데이터베이스에 저장
+
+==================================================
+[ 기능 - 계정 이름, 설명, 옵션 병경 및 정책 ]
+
+요청 주소
+  - PATCH /api/accounts/{accountPublicId}
+  
+인터페이스 및 메서드
+  - AccountCommand Interface / updateAccountInfo()
+  
+요청 파라미터
+  - 멤버 식별자(액세스 토큰 쿠키), 계정 식별자, 계정 이름, 계정 설명, 계정 옵션
+  - (memberPublicId, accountPublicId, accountName, accountDescription, optionCode)
+
+검증 정책
+  - AccountPolicy Interface / validateForUpdateAccount()
+  - 회원이 서비스를 이용가능한 상태인지 검증한다. canUseService()
+  - 해당 가계부가 자신의 소유인지 검증한다.
+  - 해당 유형의 계정 항목중 동일한 이름이 있는지 검사한다.
+  - 변경하려는 계정의 옵션이 사용할 수 있는 옵션인지 검증한다.
+  
+프로세스
+  - 1. 멤버 정보가 포함된 토큰과 계정 식별자와 변경하려는 계정 정보 Request를 받는다.
+  - 2. 위 검증 정책을 거쳐 계정 정보가 변경 가능한 상태인지 확인한다.
+  - 3. Request로 받은 정보로 해당 계정을 업데이트 한다.
+  
+==================================================
+[  ]

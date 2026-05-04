@@ -20,4 +20,6 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
 	Optional<Ledger> findByLedgerPublicIdAndOwnerId(PublicId ledgerPublicId, Long ownerId);
 	
 	int countByOwnerId(Long ownerId);
+
+	Optional<Ledger> findByOwnerIdAndLedgerPublicId(Long ownerId, PublicId ledgerPublicId);
 }

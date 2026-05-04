@@ -86,7 +86,7 @@ public class LedgerApplicationTest {
 		em.flush();
 		em.clear();
 		
-		Ledger createdLedger = ledgerFinder.findByLedgerPublicId(new PublicId(result.ledgerPublicId()));
+		Ledger createdLedger = ledgerFinder.findByLedgerPublicId(member.getMemberPublicId(), new PublicId(result.ledgerPublicId()));
 		
 		List<Account> createdAccounts = accountFinder.findByLedgerId(createdLedger.getId());
 		assertThat(createdAccounts.size() == accountSize).isTrue();
@@ -146,7 +146,7 @@ public class LedgerApplicationTest {
 		em.flush();
 		em.clear();
 		
-		Ledger updated = ledgerCommand.reactivte(member.getMemberPublicId(), ledger.getLedgerPublicId());
+		Ledger updated = ledgerCommand.reactivate(member.getMemberPublicId(), ledger.getLedgerPublicId());
 		
 		assertThat(updated.getStatus()).isEqualTo(LedgerStatus.ACTIVE);
 	}

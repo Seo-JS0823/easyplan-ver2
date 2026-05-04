@@ -19,6 +19,7 @@ import com.easyplan.finance.application.required.AccountRepository;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountBasicTemplate;
 import com.easyplan.finance.domain.account.AccountOptionTemplate;
+import com.easyplan.finance.domain.account.AccountStatus;
 import com.easyplan.finance.domain.account.AccountType;
 import com.easyplan.finance.domain.account.request.AccountCreateRequest;
 import com.easyplan.finance.domain.account.request.AccountUpdateRequest.AccountInfoUpdate;
@@ -107,7 +108,7 @@ public class AccountApplicationTest {
 		
 		assertThat(account.getAccountName()).isEqualTo(accountName);
 		assertThat(account.getAccountDescription()).isEqualTo(accountDescription);
-		assertThat(accountRepo.count()).isEqualTo((accountSize * 2) + 1);
+		assertThat(accountRepo.count()).isEqualTo((accountSize * 3) + 1);
 		
 		String accountName2 = "롯데캐시";
 		String accountDescription2 = "롯데오지마라";
@@ -124,27 +125,13 @@ public class AccountApplicationTest {
 		
 		assertThat(account2.getAccountName()).isEqualTo(accountName2);
 		assertThat(account2.getAccountDescription()).isEqualTo(accountDescription2);
-		assertThat(accountRepo.count()).isEqualTo((accountSize * 2) + 2);
+		assertThat(accountRepo.count()).isEqualTo((accountSize * 3) + 2);
 	}
 	
 	@Test
 	@DisplayName("계정 정보 변경")
 	void accountInfoUpdate() {
-		String accountName = "국민은행";
-		String accountDescription = "월급받는 통장";
-		
-		AccountCreateRequest accountCreate = new AccountCreateRequest(
-				ledger.getLedgerPublicId().publicId(),
-				AccountType.ASSET,
-				AccountOptionTemplate.BANK_ACCOUNT,
-				accountName,
-				accountDescription
-		);
-		
-		Account account = accountCommand.createAccount(member.getMemberPublicId(), ledger.getLedgerPublicId(), accountCreate);
-		
-		em.flush();
-		em.clear();
+		Account account = createAccountMember1();
 		
 		String updateName = "국민은행";
 		String updateDescription = "월급받는 통장2";
@@ -160,6 +147,58 @@ public class AccountApplicationTest {
 		
 		assertThat(updated.getAccountName()).isEqualTo(updateName);
 		assertThat(updated.getAccountDescription()).isEqualTo(updateDescription);
+	}
+	
+	@Test
+	@DisplayName("계정 항목 비활성화")
+	void accountDeactivate() {
+		Account account = createAccountMember1();
+		
+		accountCommand.deactivate(member.getMemberPublicId(), account.getAccountPublicId());
+		
+		em.flush(); em.clear();
+		
+		Account updated = accountRepo.findByAccountPublicId(account.getAccountPublicId());
+		
+		assertThat(updated.getStatus()).isEqualTo(AccountStatus.DEACTIVATE);
+	}
+	
+	@Test
+	@DisplayName("계정 항목 다시 활성화")
+	void accountReactivate() {
+		Account account = createAccountMember1();
+		
+		accountCommand.deactivate(member.getMemberPublicId(), account.getAccountPublicId());
+		
+		em.flush(); em.clear();
+		
+		accountCommand.reactivate(member.getMemberPublicId(), account.getAccountPublicId());
+		
+		em.flush(); em.clear();
+		
+		Account updated = accountRepo.findByAccountPublicId(account.getAccountPublicId());
+		
+		assertThat(updated.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+	}
+	
+	private Account createAccountMember1() {
+		String accountName = "국민은행";
+		String accountDescription = "월급받는 통장";
+		
+		AccountCreateRequest accountCreate = new AccountCreateRequest(
+				ledger.getLedgerPublicId().publicId(),
+				AccountType.ASSET,
+				AccountOptionTemplate.BANK_ACCOUNT,
+				accountName,
+				accountDescription
+		);
+		
+		Account account = accountCommand.createAccount(member.getMemberPublicId(), ledger.getLedgerPublicId(), accountCreate);
+
+		em.flush();
+		em.clear();
+		
+		return account;
 	}
 	
 }

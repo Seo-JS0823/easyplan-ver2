@@ -32,7 +32,7 @@ public class LedgerController {
 	private final LedgerFinder ledgerFinder;
 	
 	@PostMapping("/{memberPublicId}")
-	public GlobalResponse<LedgerCreateResponse> createLedger(
+	public GlobalResponse<LedgerCreateResponse> createLedgerAPI(
 			@RequestBody LedgerCreateRequest ledgerCreate,
 			@PathVariable String memberPublicId) {
 		
@@ -43,7 +43,7 @@ public class LedgerController {
 	
 	// 내 가계부 목록 조회
 	@GetMapping
-	public GlobalResponse<LedgerListResponse> ledgerListAll(
+	public GlobalResponse<LedgerListResponse> ledgerListAllAPI(
 			@AuthenticationPrincipal MemberDetails member) {
 		
 		LedgerListResponse response = LedgerListResponse.of(ledgerFinder.findMyLedgers(new PublicId(member.getUsername())));
@@ -53,10 +53,13 @@ public class LedgerController {
 	
 	// 내 가계부 단건 조회
 	@GetMapping("/{ledgerPublicId}")
-	public GlobalResponse<LedgerInfo> ledgerList(@AuthenticationPrincipal MemberDetails member,
+	public GlobalResponse<LedgerInfo> ledgerListAPI(@AuthenticationPrincipal MemberDetails member,
 			@PathVariable String ledgerPublicId) {
 		
-		LedgerInfo response = LedgerInfo.from(ledgerFinder.findByLedgerPublicId(new PublicId(ledgerPublicId)));
+		LedgerInfo response = LedgerInfo.from(ledgerFinder.findByLedgerPublicId(
+				new PublicId(member.getUsername()),
+				new PublicId(ledgerPublicId)
+		));
 		
 		return GlobalResponse.ok("", response);
 	}
@@ -64,7 +67,7 @@ public class LedgerController {
 	
 	// 가계부 이름/설명 수정
 	@PatchMapping("/{ledgerPublicId}")
-	public GlobalResponse<LedgerInfo> ledgerInfoUpdate(
+	public GlobalResponse<LedgerInfo> ledgerInfoUpdateAPI(
 			@AuthenticationPrincipal MemberDetails member,
 			@PathVariable String ledgerPublicId,
 			@RequestBody LedgerUpdateRequest.LedgerInfoUpdate ledgerInfo) {
@@ -80,7 +83,7 @@ public class LedgerController {
 	
 	// 가계부 회계시작일 변경
 	@PatchMapping("/fiscal/{ledgerPublicId}")
-	public GlobalResponse<LedgerInfo> ledgerFiscalUpdate(
+	public GlobalResponse<LedgerInfo> ledgerFiscalUpdateAPI(
 			@AuthenticationPrincipal MemberDetails member,
 			@PathVariable String ledgerPublicId,
 			@RequestBody LedgerUpdateRequest.LedgerFiscalDayUpdate ledgerFiscal) {
@@ -96,7 +99,7 @@ public class LedgerController {
 	
 	// 가계부 읽기전용으로(= 사용안함) 처리
 	@PatchMapping("/archived/{ledgerPublicId}")
-	public GlobalResponse<Void> ledgerArchived(
+	public GlobalResponse<Void> ledgerArchivedAPI(
 			@AuthenticationPrincipal MemberDetails member,
 			@PathVariable String ledgerPublicId) {
 		
@@ -107,11 +110,11 @@ public class LedgerController {
 	
 	// 가계부 활성화 처리
 	@PatchMapping("/reactivate/{ledgerPublicId}")
-	public GlobalResponse<Void> ledgerReactivate(
+	public GlobalResponse<Void> ledgerReactivateAPI(
 			@AuthenticationPrincipal MemberDetails member,
 			@PathVariable String ledgerPublicId) {
 		
-		ledgerCommand.reactivte(new PublicId(member.getUsername()), new PublicId(ledgerPublicId));
+		ledgerCommand.reactivate(new PublicId(member.getUsername()), new PublicId(ledgerPublicId));
 		
 		return GlobalResponse.ok("가계부가 '활성화' 상태로 변경되었습니다.");
 	}

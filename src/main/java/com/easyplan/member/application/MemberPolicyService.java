@@ -7,9 +7,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.easyplan._shared.domain.Email;
+import com.easyplan._shared.domain.PublicId;
 import com.easyplan._shared.time.UTC;
+import com.easyplan.member.application.provided.MemberFinder;
 import com.easyplan.member.application.provided.MemberPolicy;
-import com.easyplan.member.application.required.MemberRepository;
+import com.easyplan.member.application.provided.MemberSummary;
 import com.easyplan.member.domain.Nickname;
 import com.easyplan.member.domain.exception.MemberException;
 import com.easyplan.member.domain.exception.MemberExceptionCode;
@@ -20,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberPolicyService implements MemberPolicy {
 
-	private final MemberRepository repo;
+	private final MemberFinder memberFinder;
 	
 	private static final List<String> FORBIDDEN_NICKNAMES = List.of("관리자", "admin");
 	
@@ -40,16 +42,21 @@ public class MemberPolicyService implements MemberPolicy {
 
 	@Override
 	public void checkDuplicateEmail(String email) {
-		if(repo.existsByEmail(new Email(email))) {
-			throw new MemberException(MemberExceptionCode.DUPLICATE_EMAIL);
-		}
+		memberFinder.checkDuplicateEmail(new Email(email));
 	}
 
 	@Override
 	public void checkDuplicateNickname(String nickname) {
-		if(repo.existsByNickname(new Nickname(nickname))) {
-			throw new MemberException(MemberExceptionCode.DUPLICATE_NICKNAME);
-		}
+		memberFinder.checkDuplicateNickname(new Nickname(nickname));
+	}
+
+	@Override
+	public MemberSummary canUseService(PublicId memberPublicId) {
+		MemberSummary member = memberFinder.findByPublicIdSummary(memberPublicId);
+		
+		member.canUseService();
+		
+		return member;
 	}
 
 }

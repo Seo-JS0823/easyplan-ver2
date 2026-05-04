@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.domain.account.Account;
+import com.easyplan.finance.domain.account.AccountStatus;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
 	List<Account> findByLedgerId(Long ledgerId);
@@ -15,4 +16,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 	Account findByAccountPublicId(PublicId accountPublicId);
 
 	boolean existsByLedgerIdAndAccountPublicId(Long ledgerId, PublicId accountPublicId);
+
+	List<Account> findByLedgerIdAndStatus(Long ledgerId, AccountStatus active);
+	
+	Account findByAccountPublicIdAndStatus(PublicId accountPublicId, AccountStatus active);
 }

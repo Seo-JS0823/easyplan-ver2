@@ -57,6 +57,7 @@ public class LedgerApplicationFailTest {
 	MemberRegisterRequest request1;
 	MemberRegisterRequest request2;
 	LedgerCreateRequest ledgerCreateRequest;
+	LedgerCreateRequest ledgerCreateRequest2;	
 	int accountSize = 0;
 	
 	@BeforeEach
@@ -77,13 +78,19 @@ public class LedgerApplicationFailTest {
 				"테스트 가계부",
 				"테스트를 위한 가계부 생성",
 				accountTemplate);
+		
+		ledgerCreateRequest2 = new LedgerCreateRequest(
+				LedgerType.PERSONAL,
+				"테스트 가계부2",
+				"테스트를 위한 가계부 생성",
+				accountTemplate);
 	}
 	
 	@Test
 	@DisplayName("가계부 이름, 설명 변경 다른 사용자 가계부 변경")
 	void ledgerInfoUpdateFail_NotOwner() {
-		Ledger memberLedger1 = createLedger1();
-		Ledger memberLedger2 = createLedger2();
+		Ledger memberLedger1 = createLedger1(ledgerCreateRequest);
+		Ledger memberLedger2 = createLedger2(ledgerCreateRequest);
 		
 		String newName = "LedgerInfo";
 		String newDescription = "LedgerInfoUpdateTest";
@@ -105,8 +112,8 @@ public class LedgerApplicationFailTest {
 	@Test
 	@DisplayName("가계부 이름, 설명 변경 서비스 이용 불가 상태")
 	void ledgerInfoUpdateFail_MemberCannotUseService() {
-		Ledger memberLedger1 = createLedger1();
-		Ledger memberLedger2 = createLedger2();
+		Ledger memberLedger1 = createLedger1(ledgerCreateRequest);
+		Ledger memberLedger2 = createLedger2(ledgerCreateRequest);
 		
 		memberDeactivate(member1, request1.password());
 		memberDeactivate(member2, request2.password());
@@ -130,8 +137,8 @@ public class LedgerApplicationFailTest {
 	@Test
 	@DisplayName("가계부 이름, 설명 변경 사용안함 상태의 가계부")
 	void ledgerInfoUpdateFail_AlreadyLedger() {
-		Ledger memberLedger1 = createLedger1();
-		Ledger memberLedger2 = createLedger2();
+		Ledger memberLedger1 = createLedger1(ledgerCreateRequest);
+		Ledger memberLedger2 = createLedger2(ledgerCreateRequest);
 		
 		ledgerArchived(member1, memberLedger1);
 		ledgerArchived(member2, memberLedger2);
@@ -155,13 +162,18 @@ public class LedgerApplicationFailTest {
 	@Test
 	@DisplayName("가계부 이름, 설명 변경 동일 이름의 가계부가 존재")
 	void ledgerInfoUpdateFail_DuplicateName() {
-		Ledger memberLedger1 = createLedger1();
-		Ledger memberLedger2 = createLedger2();
+		Ledger memberLedger1 = createLedger1(ledgerCreateRequest);
+		Ledger memberLedger2 = createLedger1(ledgerCreateRequest2);
 		
-		String newName = ledgerCreateRequest.name();
+		String newName = ledgerCreateRequest2.name();
 		String newDescription = "LedgerInfoUpdateTest";
 		
 		LedgerInfoUpdate ledgerInfo = new LedgerInfoUpdate(newName, newDescription);
+		
+		String newName2 = ledgerCreateRequest.name();
+		String newDescription2 = "LedgerInfoUpdateTestFailCase";
+		
+		LedgerInfoUpdate ledgerInfo2 =  new LedgerInfoUpdate(newName2, newDescription2);
 		
 		assertThatThrownBy(() -> 
 			ledgerCommand.updateLedgerInfo(member1.getMemberPublicId(), memberLedger1.getLedgerPublicId(), ledgerInfo)
@@ -169,7 +181,7 @@ public class LedgerApplicationFailTest {
 		.hasMessageContaining(LedgerExceptionCode.LEDGER_NAME_DUPLICATE.getMessage());
 		
 		assertThatThrownBy(() -> 
-			ledgerCommand.updateLedgerInfo(member2.getMemberPublicId(), memberLedger2.getLedgerPublicId(), ledgerInfo)
+			ledgerCommand.updateLedgerInfo(member1.getMemberPublicId(), memberLedger2.getLedgerPublicId(), ledgerInfo2)
 		).isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerExceptionCode.LEDGER_NAME_DUPLICATE.getMessage());
 	}
@@ -188,16 +200,16 @@ public class LedgerApplicationFailTest {
 		em.clear();
 	}
 	
-	private Ledger createLedger1() {
-		Ledger ledger =  ledgerCommand.createLedger(member1.getMemberPublicId(), ledgerCreateRequest);
+	private Ledger createLedger1(LedgerCreateRequest ledgerCreate) {
+		Ledger ledger =  ledgerCommand.createLedger(member1.getMemberPublicId(), ledgerCreate);
 		em.flush();
 		em.clear();
 		
 		return ledger;
 	}
 	
-	private Ledger createLedger2() {
-		Ledger ledger =  ledgerCommand.createLedger(member2.getMemberPublicId(), ledgerCreateRequest);
+	private Ledger createLedger2(LedgerCreateRequest ledgerCreate) {
+		Ledger ledger =  ledgerCommand.createLedger(member2.getMemberPublicId(), ledgerCreate);
 		em.flush();
 		em.clear();
 		

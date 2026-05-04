@@ -45,7 +45,7 @@ public class LedgerCommandService implements LedgerCommand {
 	
 	@Override
 	public Ledger createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreate) {
-		Ledger ledger = ledgerPolicy.validateAndCreateLedger(memberPublicId, ledgerCreate);
+		Ledger ledger = ledgerPolicy.validateForLedgerCreate(memberPublicId, ledgerCreate);
 		ledgerRepo.save(ledger);
 		
 		List<AccountCategory> accountCategory = AccountCategory.createDefault(ledger.getId());
@@ -91,9 +91,7 @@ public class LedgerCommandService implements LedgerCommand {
 
 	@Override
 	public Ledger updateLedgerInfo(PublicId memberPublicId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo) {
-		Ledger ledger = ledgerPolicy.validateForUpdateLedger(memberPublicId, ledgerPublicId);
-		
-		ledgerPolicy.validateForInfoLedger(memberPublicId, ledgerInfo);
+		Ledger ledger = ledgerPolicy.validateForInfoLedger(memberPublicId, ledgerPublicId, ledgerInfo);
 		
 		ledger.changeInfo(ledgerInfo.name(), ledgerInfo.description());
 		
@@ -119,7 +117,7 @@ public class LedgerCommandService implements LedgerCommand {
 	}
 
 	@Override
-	public Ledger reactivte(PublicId memberPublicId, PublicId ledgerPublicId) {
+	public Ledger reactivate(PublicId memberPublicId, PublicId ledgerPublicId) {
 		Ledger ledger = ledgerPolicy.validateForUpdateLedger(memberPublicId, ledgerPublicId);
 		
 		ledger.reactivate();

@@ -3,7 +3,8 @@ package com.easyplan.member.application;
 import java.util.Optional;
 
 import org.hibernate.Session;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.easyplan._shared.domain.Email;
 import com.easyplan._shared.domain.PublicId;
@@ -19,8 +20,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
-@Repository
+@Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberFindService implements MemberFinder {
 	
 	@PersistenceContext
@@ -43,7 +45,8 @@ public class MemberFindService implements MemberFinder {
 		
 		return em.unwrap(Session.class)
 				.bySimpleNaturalId(Member.class)
-				.load(memberPublicId);
+				.loadOptional(memberPublicId)
+				.orElseThrow(() -> new MemberException(MemberExceptionCode.MEMBER_NOT_FOUND));
 	}
 	
 	@Override
@@ -71,6 +74,5 @@ public class MemberFindService implements MemberFinder {
 		
 		return new MemberSummaryImpl(findByPublicId(publicId));
 	}
-	
 	
 }

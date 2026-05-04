@@ -11,7 +11,10 @@ import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.ledger.LedgerFinder;
 import com.easyplan.finance.application.required.LedgerRepository;
 import com.easyplan.finance.domain.ledger.Ledger;
-import com.easyplan.member.application.provided.MemberFinder;
+import com.easyplan.finance.domain.ledger.exception.LedgerException;
+import com.easyplan.finance.domain.ledger.exception.LedgerExceptionCode;
+import com.easyplan.member.application.provided.MemberPolicy;
+import com.easyplan.member.application.provided.MemberSummary;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -27,7 +30,7 @@ public class LedgerFindService implements LedgerFinder {
 	
 	private final LedgerRepository ledgerRepo;
 	
-	private final MemberFinder memberFinder;
+	private final MemberPolicy memberPolicy;
 	
 	@Override
 	public List<Ledger> findByOwnerId(Long ownerId) {
@@ -35,17 +38,23 @@ public class LedgerFindService implements LedgerFinder {
 	}
 
 	@Override
-	public Ledger findByLedgerPublicId(PublicId ledgerPublicId) {
-		// return ledgerRepo.findByLedgerPublicId(ledgerPublicId);
+	public Ledger findByLedgerPublicId(PublicId memberPublicId, PublicId ledgerPublicId) {
+		MemberSummary member = memberPolicy.canUseService(memberPublicId);
 		
-		return em.unwrap(Session.class)
+		Ledger ledger = em.unwrap(Session.class)
 				.bySimpleNaturalId(Ledger.class)
 				.load(ledgerPublicId);
+		
+		if(ledger == null || !ledger.getOwnerId().equals(member.getId())) {
+			throw new LedgerException(LedgerExceptionCode.LEDGER_NOT_FOUND);
+		}
+		
+		return ledger;
 	}
 
 	@Override
 	public List<Ledger> findMyLedgers(PublicId memberPublicId) {
-		Long ownerId = memberFinder.findByPublicId(memberPublicId).getId();
+		Long ownerId = memberPolicy.canUseService(memberPublicId).getId();
 		
 		return findByOwnerId(ownerId);
 	}
@@ -73,6 +82,11 @@ public class LedgerFindService implements LedgerFinder {
 	@Override
 	public Optional<Ledger> findByid(Long ledgerId) {
 		return ledgerRepo.findById(ledgerId);
+	}
+
+	@Override
+	public Optional<Ledger> findByOwnerIdAndLedgerPublicId(Long id, PublicId ledgerPublicId) {
+		return ledgerRepo.findByOwnerIdAndLedgerPublicId(id, ledgerPublicId);
 	}
 
 }

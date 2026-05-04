@@ -6,11 +6,11 @@ import com.easyplan.finance.domain.ledger.request.LedgerCreateRequest;
 import com.easyplan.finance.domain.ledger.request.LedgerUpdateRequest.LedgerInfoUpdate;
 
 public interface LedgerPolicy {
-	void validateForLedgerOwnership(PublicId memberPublicId, PublicId ledgerPublicId);
+	Ledger validateForLedgerOwnership(PublicId memberPublicId, PublicId ledgerPublicId);
 	
-	Ledger validateAndCreateLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreate);
+	Ledger validateForLedgerCreate(PublicId memberPublicId, LedgerCreateRequest ledgerCreate);
 	
 	Ledger validateForUpdateLedger(PublicId memberPublicId, PublicId ledgerPublicId);
 
-	void validateForInfoLedger(PublicId memberPublicId, LedgerInfoUpdate ledgerInfo);
+	Ledger validateForInfoLedger(PublicId memberPublicId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo);
 }
