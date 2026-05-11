@@ -2,7 +2,7 @@ package com.easyplan.member.domain;
 
 import java.time.LocalDate;
 
-import com.easyplan._global.infra.jpa.BaseEntity;
+import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan._shared.util.NonNull;
 
 import jakarta.persistence.AttributeOverride;

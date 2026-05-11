@@ -8,7 +8,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
 
-import com.easyplan._global.infra.jpa.BaseEntity;
+import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan._shared.domain.Email;
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan._shared.util.NonNull;

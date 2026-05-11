@@ -1,5 +1,9 @@
 package com.easyplan.finance.application.required;
 
-public interface JournalRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.easyplan.finance.domain.journal.Journal;
+
+public interface JournalRepository extends JpaRepository<Journal, Long> {
 
 }

@@ -1,6 +1,6 @@
 package com.easyplan.finance.domain.account;
 
-import com.easyplan._global.infra.jpa.BaseEntity;
+import com.easyplan._shared.domain.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,29 +12,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "account_options")
+@Table(name = "account_option")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AccountOption extends BaseEntity {
-
+	
 	@Column(name = "option_code", nullable = false, updatable = false)
 	@Enumerated(EnumType.STRING)
-	private AccountOptionTemplate optionCode;
+	private AccountOptionTemplate option;
 	
-	@Column(name = "option_name", nullable = false, length = 15, updatable = false)
-	private String optionName;
-	
-	@Column(name = "account_type", nullable = false, updatable = false)
-	@Enumerated(EnumType.STRING)
-	private AccountType accountType;
-	
-	public static AccountOption create(AccountOptionTemplate optionCode, String optionName, AccountType accountType) {
+	public static AccountOption create(AccountOptionTemplate option) {
 		AccountOption accountOption = new AccountOption();
 		
-		accountOption.optionCode = optionCode;
-		accountOption.optionName = optionName;
-		accountOption.accountType = accountType;
+		accountOption.option = option;
 		
 		return accountOption;
+	}
+	
+	public String getOptionName() {
+		return this.option.getOptionName();
+	}
+	
+	public AccountType getAccountType() {
+		return this.option.getAccountType();
 	}
 }

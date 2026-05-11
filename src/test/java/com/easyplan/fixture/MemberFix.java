@@ -56,7 +56,7 @@ public class MemberFix {
 	public static MemberRegisterRequest memberRegisterRequest2() {
 		return new MemberRegisterRequest(
 				"easyplan@naver.com",
-				"easyplan01@",
+				"password01@",
 				"개발좌",
 				"Easyplan 개발자 여러분 일하세요.",
 				LocalDate.of(2000, 3, 4),
@@ -83,22 +83,8 @@ public class MemberFix {
 			}
 
 			@Override
-			public void checkDuplicateEmail(String email) {
-				if(email.equals("easyplan@test.com")) {
-					throw new MemberException(MemberExceptionCode.DUPLICATE_EMAIL);
-				}
-			}
-
-			@Override
-			public void checkDuplicateNickname(String nickname) {
-				if(nickname.equals("Easyplan")) {
-					throw new MemberException(MemberExceptionCode.DUPLICATE_NICKNAME);
-				}
-			}
-
-			@Override
-			public MemberSummary canUseService(PublicId memberPublicId) {
-				return null;
+			public void canUseService(MemberSummary member) {
+				
 			}
 		};
 	}

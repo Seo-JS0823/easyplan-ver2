@@ -9,11 +9,15 @@ import com.easyplan.member.domain.Nickname;
 
 // 멤버 조회 인터페이스
 public interface MemberFinder {
-	MemberSummary findByPublicIdSummary(PublicId publicId);
+	
+	// 외부 도메인에서 서비스 사용 가능한 멤버를 조회해야할 때 사용
+	MemberSummary findActiveMember(PublicId memberPublicId);
+	
+	MemberSummary findByPublicIdSummary(PublicId memberPublicId);
 	
 	Member findById(Long id);
 	
-	Member findByPublicId(PublicId publicId);
+	Member findByPublicId(PublicId memberPublicId);
 	
 	Optional<Member> findOptionalByEmail(Email email);
 	

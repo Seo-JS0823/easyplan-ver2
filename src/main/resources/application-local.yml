@@ -1,4 +1,4 @@
-root.path: http://localhost:8080
+root.path: https://localhost:5173
 
 spring:
   application.name: easyplan

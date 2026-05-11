@@ -38,6 +38,7 @@ out/
 
 ### ENV ###
 *.env
+*.pem
 
 ### Setting ###
 

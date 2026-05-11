@@ -1,11 +1,13 @@
 package com.easyplan.finance.domain.account;
 
-import com.easyplan._global.infra.jpa.BaseEntity;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan._shared.domain.PublicId;
+import com.easyplan.finance.domain.account.exception.AccountErrorCode;
 import com.easyplan.finance.domain.account.exception.AccountException;
-import com.easyplan.finance.domain.account.exception.AccountExceptionCode;
-import com.easyplan.finance.domain.account.request.AccountCreateRequest;
-import com.easyplan.finance.domain.account.request.AccountUpdateRequest.AccountInfoUpdate;
+import com.easyplan.finance.domain.ledger.Ledger;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -13,45 +15,39 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-		name = "account",
-		uniqueConstraints = {
-				@UniqueConstraint(
-						name = "uk_category_id_account_name",
-						columnNames = {"category_id", "account_name"}
-				)
-		}
-)
+@Table(name = "account")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Account extends BaseEntity {
-
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ledger_id", nullable = false, updatable = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	private Ledger ledger;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category_id", nullable = false, updatable = false)
+	private Category category;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "option_id", nullable = false)
+	private AccountOption option;
+	
 	@Embedded
 	@AttributeOverride(
 			name = "publicId",
-			column = @Column(name = "account_public_id", nullable = false, unique = true, updatable = false, length = 40)
+			column = @Column(name = "account_public_id", nullable = false, unique = true, updatable = false)
 	)
 	private PublicId accountPublicId;
-	
-	@Column(name = "ledger_id", nullable = false)
-	private Long ledgerId;
-	
-	@Column(name = "category_id", nullable = false, updatable = false)
-	private Long categoryId;
-	
-	@Column(name = "option_id", nullable = false)
-	private Long optionId;
-	
-	@Column(name = "status", nullable = false, length = 10)
-	@Enumerated(EnumType.STRING)
-	private AccountStatus status;
 	
 	@Column(name = "account_name", nullable = false)
 	private String accountName;
@@ -59,64 +55,46 @@ public class Account extends BaseEntity {
 	@Column(name = "account_description")
 	private String accountDescription;
 	
-	public static Account create(Long ledgerId, Long categoryId, Long optionId, String accountName, String accountDescription) {
+	@Column(name = "account_status", nullable = false, length = 10)
+	@Enumerated(EnumType.STRING)
+	private AccountStatus status;
+	
+	public static Account create(Ledger ledger, Category category, AccountOption option, String accountName, String accountDescription) {
 		Account account = new Account();
 		
-		account.accountPublicId = PublicId.create();
-		account.ledgerId = ledgerId;
-		account.categoryId = categoryId;
-		account.optionId = optionId;
+		account.ledger = ledger;
+		account.category = category;
+		account.option = option;
+		
 		account.accountName = accountName;
 		account.accountDescription = accountDescription;
 		
-		account.status = AccountStatus.ACTIVE;
-		
-		return account;
-	}
-	
-	public static Account create(Long ledgerId, Long categoryId, Long optionId, AccountCreateRequest accountCreate) {
-		Account account = new Account();
-		
 		account.accountPublicId = PublicId.create();
-		account.ledgerId = ledgerId;
-		account.categoryId = categoryId;
-		account.optionId = optionId;
-		account.accountName = accountCreate.accountName();
-		account.accountDescription = accountCreate.accountDescription();
-		
 		account.status = AccountStatus.ACTIVE;
 		
 		return account;
 	}
 	
-	public void changeAccountInfo(Long optionId, AccountInfoUpdate accountInfo) {
+	public void changeInfo(String accountName, String accountDescription, AccountOption option) {
 		isActive();
 		
-		this.accountName = accountInfo.accountName();
-		this.accountDescription = accountInfo.accountDescription();
-		this.optionId = optionId;
+		this.accountName = accountName;
+		this.accountDescription = accountDescription;
+		this.option = option;
 	}
 	
 	public void deactivate() {
-		if(this.status == AccountStatus.DEACTIVATE) {
-			return;
-		}
-		
 		this.status = AccountStatus.DEACTIVATE;
-	}
-	
-	public void reactivate() {
-		if(this.status == AccountStatus.ACTIVE) {
-			return;
-		}
-		
-		this.status = AccountStatus.ACTIVE;
 	}
 	
 	public void isActive() {
 		if(this.status != AccountStatus.ACTIVE) {
-			throw new AccountException(AccountExceptionCode.ACCOUNT_NOT_ACTIVE);
+			throw new AccountException(AccountErrorCode.ACCOUNT_DEACTIVATE);
 		}
+	}
+	
+	public AccountType getAccountType() {
+		return this.category.getAccountType();
 	}
 	
 }

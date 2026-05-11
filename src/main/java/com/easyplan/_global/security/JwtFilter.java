@@ -8,8 +8,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.easyplan._shared.adapter.CookieProp;
-import com.easyplan._shared.adapter.CookieProvider;
+import com.easyplan._shared.util.CookieProp;
+import com.easyplan._shared.util.CookieProvider;
 import com.easyplan.auth.application.required.TokenProvider;
 import com.easyplan.auth.domain.TokenClaims;
 import com.easyplan.member.application.provided.MemberFinder;

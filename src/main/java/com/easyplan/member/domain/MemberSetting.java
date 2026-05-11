@@ -1,6 +1,6 @@
 package com.easyplan.member.domain;
 
-import com.easyplan._global.infra.jpa.BaseEntity;
+import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan.member.domain.converter.TimeZoneIdConverter;
 
 import jakarta.persistence.Column;

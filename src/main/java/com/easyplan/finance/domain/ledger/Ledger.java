@@ -1,14 +1,9 @@
 package com.easyplan.finance.domain.ledger;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.NaturalIdCache;
-
-import com.easyplan._global.infra.jpa.BaseEntity;
+import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan._shared.domain.PublicId;
+import com.easyplan.finance.domain.ledger.exception.LedgerErrorCode;
 import com.easyplan.finance.domain.ledger.exception.LedgerException;
-import com.easyplan.finance.domain.ledger.exception.LedgerExceptionCode;
 import com.easyplan.finance.domain.ledger.request.LedgerCreateRequest;
 
 import jakarta.persistence.AttributeOverride;
@@ -18,106 +13,79 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-		name = "ledger",
-		uniqueConstraints = {
-				@UniqueConstraint(
-						name = "uk_owner_id_ledger_name",
-						columnNames = {"owner_id", "ledger_name"}
-				)
-		}
-)
+@Table(name = "ledger")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@NaturalIdCache
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Ledger extends BaseEntity {
 	
-	// Member -> id
-	@Column(name = "owner_id", nullable = false, updatable = false)
-	private Long ownerId;
+	@Column(name = "member_id", nullable = false, updatable = false)
+	private Long ledgerMemberId;
 	
-	@NaturalId
 	@Embedded
 	@AttributeOverride(
 			name = "publicId",
-			column = @Column(name = "ledger_public_id", nullable = false, unique = true, updatable = false, length = 40)
+			column = @Column(name = "ledger_public_id", nullable = false, unique = true, updatable = false)
 	)
 	private PublicId ledgerPublicId;
 	
 	@Column(name = "ledger_type", nullable = false, updatable = false, length = 10)
 	@Enumerated(EnumType.STRING)
-	private LedgerType type;
+	private LedgerType ledgerType;
 	
 	@Column(name = "ledger_name", nullable = false, length = 20)
-	private String name;
+	private String ledgerName;
 	
-	@Column(name = "ledger_description", length = 300)
-	private String description;
-	
-	@Column(name = "ledger_status", nullable = false, length = 10)
-	private LedgerStatus status;
+	@Column(name = "ledger_description", nullable = false, length = 300)
+	private String ledgerDescription;
 	
 	@Embedded
 	@AttributeOverride(
 			name = "day",
-			column = @Column(name = "fiscal_start_day", nullable = false)
+			column = @Column(name = "fiscal_day", nullable = false)
 	)
-	private FiscalStartDay fiscalStartDay;
+	private FiscalDay fiscalDay;
 	
-	public static Ledger create(Long ownerId, LedgerCreateRequest ledgerCreate) {
+	public static Ledger create(Long memberId, LedgerCreateRequest ledgerCreate) {
 		Ledger ledger = new Ledger();
 		
-		ledger.ownerId = ownerId;
-		ledger.type = ledgerCreate.type();
-		ledger.name = ledgerCreate.name();
-		ledger.description = ledgerCreate.description();
-		
 		ledger.ledgerPublicId = PublicId.create();
-		ledger.status = LedgerStatus.ACTIVE;
-		ledger.fiscalStartDay = new FiscalStartDay(1);
+		
+		ledger.ledgerMemberId = memberId;
+		ledger.ledgerType = ledgerCreate.type();
+		ledger.ledgerName = ledgerCreate.name();
+		ledger.ledgerDescription = ledgerCreate.description();
+		
+		ledger.fiscalDay = new FiscalDay(1);
 		
 		return ledger;
 	}
 	
-	public void changeInfo(String name, String description) {
-		isActive();
-		
-		this.name = name;
-		this.description = description;
+	public void changeInfo(String ledgerName, String ledgerDescription) {
+		this.ledgerName = ledgerName;
+		this.ledgerDescription = ledgerDescription;
 	}
 	
-	public void changeFiscalDay(int fiscalStartDay) {
-		isActive();
-		
-		this.fiscalStartDay = new FiscalStartDay(fiscalStartDay);
+	public void changeFiscalDay(int fiscalDay) {
+		this.fiscalDay = new FiscalDay(fiscalDay);
 	}
 	
-	public void archived() {
-		if(this.status == LedgerStatus.ARCHIVED) {
-			return;
+	/*
+	 * LedgerPolicyService가 하던 이 가계부 니꺼냐? 라는 DB IO 조회 로직 등이 포함된 동작을
+	 * 파라미터로 memberId 받고 비교하면 끝인걸 왜 어렵게했을까 ㅠㅠ
+	 * 
+	 * 원래 void 였는데 자기자긴 반환하게 해서 체이닝 형식으로 하면 더 좋을듯
+	 */
+	public Ledger validateOwner(Long memberId) {
+		if(!this.ledgerMemberId.equals(memberId)) {
+			throw new LedgerException(LedgerErrorCode.LEDGER_NOT_FOUND);
 		}
 		
-		this.status = LedgerStatus.ARCHIVED;
+		return this;
 	}
 	
-	public void reactivate() {
-		if(this.status == LedgerStatus.ACTIVE) {
-			return;
-		}
-		
-		this.status = LedgerStatus.ACTIVE;
-	}
-	
-	public void isActive() {
-		if(this.status != LedgerStatus.ACTIVE) {
-			throw new LedgerException(LedgerExceptionCode.LEDGER_NOT_ACTIVE);
-		}
-	}
 }

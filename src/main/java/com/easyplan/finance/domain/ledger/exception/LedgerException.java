@@ -1,7 +1,12 @@
 package com.easyplan.finance.domain.ledger.exception;
 
-public class LedgerException extends RuntimeException {
-	public LedgerException(LedgerExceptionCode code) {
-		super(code.getMessage());
+import com.easyplan._shared.exception.GlobalErrorCode;
+import com.easyplan._shared.exception.GlobalException;
+
+public class LedgerException extends GlobalException {
+
+	public LedgerException(GlobalErrorCode error) {
+		super(error);
 	}
+
 }

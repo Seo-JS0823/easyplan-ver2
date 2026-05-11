@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.easyplan._shared.adapter.CookieProp;
+import com.easyplan._shared.util.CookieProp;
 import com.easyplan.auth.domain.request.LoginRequest;
 import com.easyplan.fixture.MemberFix;
 import com.easyplan.member.application.provided.MemberCommand;
@@ -64,6 +65,7 @@ public class AuthApiTest {
 	@DisplayName("로그인 API")
 	void login() throws Exception {
 		mockMvc.perform(post("/api/auth/login")
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 		.andDo(print())
@@ -80,6 +82,7 @@ public class AuthApiTest {
 	@DisplayName("토큰 재발급 API")
 	void reissue() throws Exception {
 		MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 		.andExpect(status().isOk())
@@ -88,6 +91,7 @@ public class AuthApiTest {
 		Cookie refreshCookie = loginResult.getResponse().getCookie(CookieProp.REFRESH.getName());
 		
 		mockMvc.perform(post("/api/auth/reissue")
+				.with(csrf())
 				.cookie(refreshCookie))
 		.andDo(print())
 		.andExpect(status().isOk())
@@ -101,6 +105,7 @@ public class AuthApiTest {
 	@DisplayName("로그아웃 API")
 	void logout() throws Exception {
 		MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 		.andExpect(status().isOk())
@@ -109,6 +114,7 @@ public class AuthApiTest {
 		Cookie refreshCookie = loginResult.getResponse().getCookie(CookieProp.REFRESH.getName());
 		
 		mockMvc.perform(post("/api/auth/logout")
+				.with(csrf())
 				.cookie(refreshCookie))
 		.andDo(print())
 		.andExpect(status().isOk())

@@ -1,6 +1,7 @@
 package com.easyplan.api.member;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,8 +22,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.easyplan._shared.util.CookieProp;
+import com.easyplan.auth.domain.request.LoginRequest;
 import com.easyplan.fixture.FakeEmailSender;
 import com.easyplan.fixture.MemberFix;
 import com.easyplan.fixture.TestEmailConfig;
@@ -44,6 +48,8 @@ import com.easyplan.member.domain.request.MemberUpdateRequest.ProfileDetail;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import jakarta.servlet.http.Cookie;
 
 
 @SpringBootTest
@@ -74,13 +80,28 @@ public class MemberApiTest {
 	
 	Member member;
 	MemberRegisterRequest request;
+	Cookie accessCookie;
 	
 	@BeforeEach
-	void setUp() {
+	void setUp() throws Exception {
 		request = MemberFix.memberRegisterRequest();
 		member = command.register(request);
 		
 		command.activate(member.getMemberPublicId());
+		accessCookie = loginAccessCookie();
+	}
+
+	private Cookie loginAccessCookie() throws Exception {
+		LoginRequest loginRequest = new LoginRequest(request.email(), request.password());
+
+		MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(loginRequest)))
+			.andExpect(status().isOk())
+			.andReturn();
+
+		return loginResult.getResponse().getCookie(CookieProp.ACCESS.getName());
 	}
 	
 	@Test
@@ -92,6 +113,7 @@ public class MemberApiTest {
 
     mockMvc
     	.perform(post("/api/members")
+    			.with(csrf())
     			.contentType(MediaType.APPLICATION_JSON)
     			.content(objectMapper.writeValueAsString(request))
     	)
@@ -112,6 +134,7 @@ public class MemberApiTest {
 	void checkEmail() throws Exception {
 		mockMvc
 			.perform(get("/api/members/check-email")
+					.with(csrf())
 					.param("email", "testtest@test.com")
 					.contentType(MediaType.APPLICATION_JSON)
 			)
@@ -126,6 +149,7 @@ public class MemberApiTest {
 	void checkNickname() throws Exception {
 		mockMvc
 			.perform(get("/api/members/check-nickname")
+					.with(csrf())
 					.param("nickname", "개발좌")
 					.contentType(MediaType.APPLICATION_JSON)
 			)
@@ -142,6 +166,8 @@ public class MemberApiTest {
 		
 		mockMvc
 			.perform(patch("/api/members/me/nickname/{publicId}", member.getMemberPublicId().publicId())
+			.with(csrf())
+			.cookie(accessCookie)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(request))
 		)
@@ -164,6 +190,8 @@ public class MemberApiTest {
 		
 		mockMvc
 			.perform(put("/api/members/me/profile/{publicId}", member.getMemberPublicId().publicId())
+			.with(csrf())
+			.cookie(accessCookie)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(request))
 		)
@@ -185,6 +213,8 @@ public class MemberApiTest {
 		MemberUpdateRequest.NotificationSetting request = new NotificationSetting(false, false);
 		
 		mockMvc.perform(put("/api/members/me/setting/{publicId}", member.getMemberPublicId().publicId())
+				.with(csrf())
+				.cookie(accessCookie)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 		.andDo(print())
@@ -204,6 +234,8 @@ public class MemberApiTest {
 		MemberUpdateRequest.PasswordUpdate request = new PasswordUpdate(this.request.password(), "easyplan1234@");
 		
 		mockMvc.perform(patch("/api/members/me/password/{publicId}", member.getMemberPublicId().publicId())
+				.with(csrf())
+				.cookie(accessCookie)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 		.andDo(print())
@@ -222,6 +254,8 @@ public class MemberApiTest {
 		MemberAccountRequest.MemberDeactivate request = new MemberDeactivate(this.request.password());
 		
 		mockMvc.perform(post("/api/members/me/deactivate/{publicId}", member.getMemberPublicId().publicId())
+				.with(csrf())
+				.cookie(accessCookie)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 		.andDo(print())

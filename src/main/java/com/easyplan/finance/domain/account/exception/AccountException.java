@@ -1,7 +1,12 @@
 package com.easyplan.finance.domain.account.exception;
 
-public class AccountException extends RuntimeException {
-	public AccountException(AccountExceptionCode code) {
-		super(code.getMessage());
+import com.easyplan._shared.exception.GlobalErrorCode;
+import com.easyplan._shared.exception.GlobalException;
+
+public class AccountException extends GlobalException {
+
+	public AccountException(GlobalErrorCode error) {
+		super(error);
 	}
+
 }

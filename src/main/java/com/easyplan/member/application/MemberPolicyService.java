@@ -4,26 +4,22 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import com.easyplan._shared.domain.Email;
-import com.easyplan._shared.domain.PublicId;
 import com.easyplan._shared.time.UTC;
-import com.easyplan.member.application.provided.MemberFinder;
 import com.easyplan.member.application.provided.MemberPolicy;
 import com.easyplan.member.application.provided.MemberSummary;
+import com.easyplan.member.domain.MemberRole;
+import com.easyplan.member.domain.MemberStatus;
 import com.easyplan.member.domain.Nickname;
 import com.easyplan.member.domain.exception.MemberException;
 import com.easyplan.member.domain.exception.MemberExceptionCode;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class MemberPolicyService implements MemberPolicy {
-
-	private final MemberFinder memberFinder;
-	
 	private static final List<String> FORBIDDEN_NICKNAMES = List.of("관리자", "admin");
 	
 	@Override
@@ -41,22 +37,14 @@ public class MemberPolicyService implements MemberPolicy {
 	}
 
 	@Override
-	public void checkDuplicateEmail(String email) {
-		memberFinder.checkDuplicateEmail(new Email(email));
-	}
-
-	@Override
-	public void checkDuplicateNickname(String nickname) {
-		memberFinder.checkDuplicateNickname(new Nickname(nickname));
-	}
-
-	@Override
-	public MemberSummary canUseService(PublicId memberPublicId) {
-		MemberSummary member = memberFinder.findByPublicIdSummary(memberPublicId);
+	public void canUseService(MemberSummary member) {
+		if(member.getStatus() != MemberStatus.ACTIVE) {
+			throw new MemberException(MemberExceptionCode.MEMBER_CANNOT_USE_SERVICE);
+		}
 		
-		member.canUseService();
-		
-		return member;
+		if(member.getRole() == MemberRole.PENDING) {
+			throw new MemberException(MemberExceptionCode.MEMBER_CANNOT_USE_SERVICE_VERIFY_EMAIL);
+		}
 	}
-
+	
 }

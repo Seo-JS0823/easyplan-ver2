@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.easyplan._shared.domain.Email;
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.member.application.provided.MemberFinder;
+import com.easyplan.member.application.provided.MemberPolicy;
 import com.easyplan.member.application.provided.MemberSummary;
 import com.easyplan.member.application.required.MemberRepository;
 import com.easyplan.member.domain.Member;
@@ -27,6 +28,8 @@ public class MemberFindService implements MemberFinder {
 	
 	@PersistenceContext
 	private EntityManager em;
+	
+	private final MemberPolicy memberPolicy;
 	
 	private final MemberRepository repo;
 
@@ -63,6 +66,8 @@ public class MemberFindService implements MemberFinder {
 
 	@Override
 	public void checkDuplicateNickname(Nickname nickname) {
+		memberPolicy.validateNickname(nickname);
+		
 		if(repo.existsByNickname(nickname)) {
 			throw new MemberException(MemberExceptionCode.DUPLICATE_NICKNAME);
 		}
@@ -73,6 +78,15 @@ public class MemberFindService implements MemberFinder {
 		// return repo.findSummaryByPublicId(publicId);
 		
 		return new MemberSummaryImpl(findByPublicId(publicId));
+	}
+
+	@Override
+	public MemberSummary findActiveMember(PublicId memberPublicId) {
+		MemberSummary member = findByPublicIdSummary(memberPublicId);
+		
+		memberPolicy.canUseService(member);
+		
+		return member;
 	}
 	
 }

@@ -1,5 +1,7 @@
 package com.easyplan.finance.domain.account;
 
+import com.easyplan.finance.domain.EntrySide;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +15,7 @@ public enum AccountType {
 	EXPENSE(EntrySide.DEBIT, "지출")
 	;
 	
-	private final EntrySide entrySide;
+	private final EntrySide side;
 	
-	private final String title;
+	private final String categoryName;
 }

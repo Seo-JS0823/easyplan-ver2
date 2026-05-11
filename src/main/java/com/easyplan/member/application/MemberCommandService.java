@@ -45,9 +45,9 @@ public class MemberCommandService implements MemberCommand {
 	
 	@Override
 	public Member register(MemberRegisterRequest memberRegister) {
-		policy.checkDuplicateEmail(memberRegister.email());
+		finder.checkDuplicateEmail(new Email(memberRegister.email()));
 		policy.validateNickname(new Nickname(memberRegister.nickname()));
-		policy.checkDuplicateNickname(memberRegister.nickname());
+		finder.checkDuplicateNickname(new Nickname(memberRegister.nickname()));
 		
 		Member member = Member.register(memberRegister, passwordEncoder, policy);
 		
@@ -58,7 +58,7 @@ public class MemberCommandService implements MemberCommand {
 
 	@Override
 	public Member changeNickname(PublicId publicId, NicknameUpdate nicknameUpdate) {
-		policy.checkDuplicateNickname(nicknameUpdate.nickname());
+		finder.checkDuplicateNickname(new Nickname(nicknameUpdate.nickname()));
 		
 		return consumerExecute(publicId, member -> {
 			member.changeNickname(new Nickname(nicknameUpdate.nickname()), policy);
@@ -110,12 +110,6 @@ public class MemberCommandService implements MemberCommand {
 			member.recover();
 		});
 	}
-	
-	private Member consumerExecute(PublicId publicId, Consumer<Member> action) {
-		Member member = finder.findByPublicId(publicId);
-		action.accept(member);
-		return repo.save(member);
-	}
 
 	@Override
 	public void cleanUpDeactivatedMembers(Instant deletionDeadline) {
@@ -140,5 +134,11 @@ public class MemberCommandService implements MemberCommand {
 		}
 		
 		return true;
+	}
+	
+	private Member consumerExecute(PublicId publicId, Consumer<Member> action) {
+		Member member = finder.findByPublicId(publicId);
+		action.accept(member);
+		return repo.save(member);
 	}
 }

@@ -1,23 +1,33 @@
 package com.easyplan.finance.application.required;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountStatus;
+import com.easyplan.finance.domain.account.Category;
+import com.easyplan.finance.domain.ledger.Ledger;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
-	List<Account> findByLedgerId(Long ledgerId);
+	Optional<Account> findByLedgerAndAccountPublicId(Ledger ledger, PublicId accountPublicId);
 	
-	boolean existsByCategoryIdAndAccountName(Long categoryId, String accountName);
+	@Query("""
+			SELECT a FROM Account a
+			JOIN FETCH a.category
+			WHERE
+					a.ledger = :ledger
+					AND a.accountPublicId = :accountPublicId
+					AND a.status = :status
+	""")
+	Optional<Account> findByLedgerAndAccountPublicIdAndStatus(Ledger ledger, PublicId accountPublicId, AccountStatus status);
 	
-	Account findByAccountPublicId(PublicId accountPublicId);
-
-	boolean existsByLedgerIdAndAccountPublicId(Long ledgerId, PublicId accountPublicId);
-
-	List<Account> findByLedgerIdAndStatus(Long ledgerId, AccountStatus active);
+	boolean existsByCategoryAndAccountName(Category category, String accountName);
 	
-	Account findByAccountPublicIdAndStatus(PublicId accountPublicId, AccountStatus active);
+	boolean existsByCategoryAndAccountNameAndIdNot(Category category, String accountName, Long id);
+	
+	List<Account> findByLedgerAndAccountPublicIdIn(Ledger ledger, List<PublicId> accountPublicId);
 }

@@ -2,7 +2,7 @@ package com.easyplan.auth.domain;
 
 import java.time.Instant;
 
-import com.easyplan._global.infra.jpa.BaseEntity;
+import com.easyplan._shared.domain.BaseEntity;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;

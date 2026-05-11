@@ -1,11 +1,13 @@
 package com.easyplan.member.domain.exception;
 
+import com.easyplan._shared.exception.GlobalErrorCode;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum MemberExceptionCode {
+public enum MemberExceptionCode implements GlobalErrorCode {
 	MEMBER_CANNOT_USE_SERVICE("서비스를 이용할 수 없는 회원입니다."),
 	MEMBER_CANNOT_USE_SERVICE_VERIFY_EMAIL("이메일 인증이 완료되지 않아 서비스를 이용할 수 없습니다."),
 	

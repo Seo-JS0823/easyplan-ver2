@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.easyplan._shared.adapter.CookieProp;
-import com.easyplan._shared.adapter.CookieProvider;
 import com.easyplan._shared.response.GlobalResponse;
+import com.easyplan._shared.util.CookieProp;
+import com.easyplan._shared.util.CookieProvider;
 import com.easyplan.auth.application.provided.AuthSessionCommand;
 import com.easyplan.auth.application.provided.LoginResult;
 import com.easyplan.auth.application.provided.ReissueResult;
