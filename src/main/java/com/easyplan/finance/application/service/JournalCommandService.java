@@ -34,12 +34,28 @@ public class JournalCommandService implements JournalCommand {
 				.map(entry -> EntryLine.create(entry.getValue(), journal.getAmount(), entry.getKey()))
 				.toList();
 		
-		return null;
+		for (EntryLine entry : entries) {
+			journal.addEntryLine(entry);
+		}
+		
+		journal.validateSave();
+		
+		return journalRepo.save(journal);
 	}
 
 	@Override
 	public Journal updateJournal(Ledger ledger, Map<EntrySide, Account> accountMap, JournalUpdateRequest journalUpdate) {
-		return null;
+		Journal journal = journalFinder.findJournal(ledger, journalUpdate.journalId());
+		
+		List<EntryLine> entries = accountMap.entrySet().stream()
+				.map(entry -> EntryLine.create(entry.getValue(), journal.getAmount(), entry.getKey()))
+				.toList();
+		
+		journal.changeEntryLineWithAmount(entries, journalUpdate);
+		
+		journal.validateSave();
+		
+		return journalRepo.save(journal);
 	}
 	
 	// 거래 수정

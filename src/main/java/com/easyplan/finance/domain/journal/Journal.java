@@ -8,9 +8,11 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.easyplan._shared.domain.BaseEntity;
+import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.journal.exception.JournalErrorCode;
 import com.easyplan.finance.domain.journal.exception.JournalException;
 import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateRequest;
+import com.easyplan.finance.domain.journal.request.JournalRequest.JournalUpdateRequest;
 import com.easyplan.finance.domain.ledger.Ledger;
 
 import jakarta.persistence.AttributeOverride;
@@ -70,6 +72,22 @@ public class Journal extends BaseEntity {
 		return journal;
 	}
 	
+	public EntryLine getEntryLine(EntrySide side) {
+		switch (side) {
+			case CREDIT : return this.entries.stream()
+						.filter(line -> line.isCredit())
+						.findFirst()
+						.get();
+			
+			case DEBIT : return this.entries.stream()
+						.filter(line -> line.isDebit())
+						.findFirst()
+						.get();
+			
+			default : throw new JournalException(JournalErrorCode.JOURNAL_SYSTEM_ERROR);
+		}
+	}
+	
 	public void addEntryLine(EntryLine line) {
 		validateEntryLine();
 		
@@ -77,7 +95,19 @@ public class Journal extends BaseEntity {
 		line.linkJournal(this);
 	}
 	
-	public void changeAmount(Long amount) {
+	public void changeEntryLineWithAmount(List<EntryLine> entries, JournalUpdateRequest journalUpdate) {
+		validateEntryLines();
+		
+		this.entries.clear();
+		
+		for (EntryLine line : entries) {
+			addEntryLine(line);
+		}
+		
+		changeAmount(journalUpdate.amount());
+	}
+	
+	private void changeAmount(Long amount) {
 		this.amount = new Money(amount);
 		
 		for (EntryLine line : entries) {
@@ -87,7 +117,7 @@ public class Journal extends BaseEntity {
 		validateEntryLines();
 	}
 	
-	public void validateSaved() {
+	public void validateSave() {
 		validateEntryLines();
 	}
 	

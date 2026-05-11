@@ -1,4 +1,4 @@
-package com.easyplan._global.util;
+package com.easyplan._shared.util;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.provided.LedgerFinder;
-import com.easyplan.finance.application.usecase.FinanceCommandUsecase;
+import com.easyplan.finance.application.usecase.FinanceCommand;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountBasicTemplate;
 import com.easyplan.finance.domain.account.AccountOptionTemplate;
@@ -45,7 +45,7 @@ import jakarta.persistence.EntityManager;
 public class FinanceCommandUsecaseFailTest {
 
 	@Autowired
-	private FinanceCommandUsecase financeCommand;
+	private FinanceCommand financeCommand;
 	
 	@Autowired
 	private LedgerFinder ledgerFinder;

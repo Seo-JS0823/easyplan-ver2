@@ -16,6 +16,7 @@ public class JournalRequest {
 	) {}
 	
 	public record JournalUpdateRequest(
+			Long journalId,
 			LocalDate transactionDate,
 			Long amount,
 			String memo,

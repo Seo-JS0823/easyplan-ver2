@@ -1,7 +1,8 @@
 package com.easyplan.finance.application.provided;
 
 import com.easyplan.finance.domain.journal.Journal;
+import com.easyplan.finance.domain.ledger.Ledger;
 
 public interface JournalFinder {
-	Journal findByJournal(Long id);
+	Journal findJournal(Ledger ledger, Long id);
 }

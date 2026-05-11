@@ -1,7 +1,8 @@
 package com.easyplan.finance.domain.journal;
 
+import com.easyplan._shared.util.MoneyFormatter;
+import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
-import com.easyplan.finance.domain.account.AccountType;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,37 +12,83 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public enum TransactionType {
-	EXPENSE("지출", "사용했습니다."),
-	INCOME("수입", "수입이 발생하였습니다."),
-	TRANSFER("이체", "이체되었습니다.")
+	EXPENSE("지출"),
+	INCOME("수입"),
+	TRANSFER("이체")
 	
 	;
 	private final String description;
 	
-	private final String transactionMessage;
-	
-	public boolean validateTransaction(Account debit, Account credit) {
-		if(debit.getAccountType() == null || credit.getAccountType() == null) {
-			log.error("거래 입력 중 EntryLine 의 AccountType 을 찾을 수 없습니다.");
-			return false;
-		}
+	public String createdMessage(Journal journal) {
+		Account debit = journal.getEntryLine(EntrySide.DEBIT).getAccount();
+		Account credit = journal.getEntryLine(EntrySide.CREDIT).getAccount();
 		
 		switch (this) {
-			case EXPENSE:
-				return debit.getAccountType() == AccountType.EXPENSE &&
-							(credit.getAccountType() == AccountType.ASSET  ||
-							 credit.getAccountType() == AccountType.LIABILITIES);
-				
-			case INCOME:
-				return debit.getAccountType() == AccountType.ASSET &&
-						   credit.getAccountType() == AccountType.INCOME;
+			case INCOME : {
+				return String.format("[%s / 수입거래] %s 계좌에 %s(으)로 %s원이 입금되었습니다.",
+						journal.getTransactionDate().toString(),
+						debit.getAccountName(),
+						credit.getAccountName(),
+						MoneyFormatter.moneyFormat(journal.getAmount())
+				);
+			}
 			
-			case TRANSFER:
-				return debit.getAccountType() == AccountType.ASSET &&
-				       credit.getAccountType() == AccountType.ASSET;
-				
-			default:
-				return false;
+			case EXPENSE : {
+				return String.format("[%s / 지출거래] %s 계좌에서 %s(으)로 %s원이 지출되었습니다.",
+						journal.getTransactionDate().toString(),
+						credit.getAccountName(),
+						debit.getAccountName(),
+						MoneyFormatter.moneyFormat(journal.getAmount())
+				);
+			}
+			
+			case TRANSFER : {
+				return String.format("[%s / 이체거래] %s 계좌에서 %s 계좌로 %s원이 이체되었습니다.",
+						journal.getTransactionDate().toString(),
+						credit.getAccountName(),
+						debit.getAccountName(),
+						MoneyFormatter.moneyFormat(journal.getAmount())
+				);
+			}
+			
+			default : throw new IllegalStateException("");
 		}
 	}
+	
+	public String updatedMessage(Journal journal) {
+		Account debit = journal.getEntryLine(EntrySide.DEBIT).getAccount();
+		Account credit = journal.getEntryLine(EntrySide.CREDIT).getAccount();
+		
+		switch (this) {
+			case INCOME : {
+				return String.format("[거래번호: %d / 수입거래] %s 계좌에 %s(으로) %s원이 입금된 내역으로 수정 완료되었습니다.",
+						journal.getId(),
+						debit.getAccountName(),
+						credit.getAccountName(),
+						MoneyFormatter.moneyFormat(journal.getAmount())
+				);
+			}
+			
+			case EXPENSE : {
+				return String.format("[거래번호: %d / 지출거래] %s 계좌에서 %s(으)로 %s원이 지출된 내역으로 수정 완료되었습니다.",
+						journal.getId(),
+						credit.getAccountName(),
+						debit.getAccountName(),
+						MoneyFormatter.moneyFormat(journal.getAmount())
+				);
+			}
+			
+			case TRANSFER : {
+				return String.format("[%s / 이체거래] %s 계좌에서 %s 계좌로 %s원이 이체된 내역으로 수정 완료되었습니다.",
+						journal.getTransactionDate().toString(),
+						credit.getAccountName(),
+						debit.getAccountName(),
+						MoneyFormatter.moneyFormat(journal.getAmount())
+				);
+			}
+			
+			default : throw new IllegalStateException("지원하지 않는 거래 유형입니다.");
+		}
+	}
+	
 }

@@ -20,6 +20,8 @@ public enum JournalErrorCode implements GlobalErrorCode {
 	
 	JOURNAL_SYSTEM_ERROR("거래 처리중 오류가 발생하였습니다. 관리자에게 문의해주세요."),
 	
+	JOURNAL_NOT_FOUND("해당 거래 내역이 존재하지 않습니다."),
+	
 	;
 	private final String message;
 }

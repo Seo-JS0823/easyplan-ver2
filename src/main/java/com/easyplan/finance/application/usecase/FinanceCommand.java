@@ -14,6 +14,8 @@ import com.easyplan.finance.application.provided.LedgerCommand;
 import com.easyplan.finance.application.provided.LedgerFinder;
 import com.easyplan.finance.application.usecase.response.AccountResponse.AccountCreateResponse;
 import com.easyplan.finance.application.usecase.response.AccountResponse.AccountUpdateResponse;
+import com.easyplan.finance.application.usecase.response.JournalResponse.JournalCreateResponse;
+import com.easyplan.finance.application.usecase.response.JournalResponse.JournalUpdateResponse;
 import com.easyplan.finance.application.usecase.response.LedgerResponse.LedgerCreateResponse;
 import com.easyplan.finance.application.usecase.response.LedgerResponse.LedgerFiscalUpdateResponse;
 import com.easyplan.finance.application.usecase.response.LedgerResponse.LedgerInfoUpdateResponse;
@@ -24,6 +26,7 @@ import com.easyplan.finance.domain.account.request.AccountRequest.AccountCreateR
 import com.easyplan.finance.domain.account.request.AccountRequest.AccountUpdateRequest;
 import com.easyplan.finance.domain.journal.Journal;
 import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateRequest;
+import com.easyplan.finance.domain.journal.request.JournalRequest.JournalUpdateRequest;
 import com.easyplan.finance.domain.ledger.Ledger;
 import com.easyplan.finance.domain.ledger.request.LedgerCreateRequest;
 import com.easyplan.finance.domain.ledger.request.LedgerUpdateRequest.LedgerFiscalUpdate;
@@ -34,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FinanceCommandUsecase {
+public class FinanceCommand {
 	
 	private final LedgerCommand ledgerCommand;
 	
@@ -105,12 +108,25 @@ public class FinanceCommandUsecase {
 	}
 	
 	// 거래 입력
-	public void createJournal(PublicId memberPublicId, PublicId ledgerPublicId, JournalCreateRequest journalCreate) {
+	public JournalCreateResponse createJournal(PublicId memberPublicId, PublicId ledgerPublicId, JournalCreateRequest journalCreate) {
 		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
 		
 		Map<EntrySide, Account> accountMap = accountFinder.findAccountFromJournal(ledger, journalCreate.entries());
 		
 		Journal journal = journalCommand.createJournal(ledger, accountMap, journalCreate);
+		
+		return JournalCreateResponse.of(journal);
+	}
+	
+	// 거래 내역 수정
+	public JournalUpdateResponse updateJournal(PublicId memberPublicId, PublicId ledgerPublicId, JournalUpdateRequest journalUpdate) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+		
+		Map<EntrySide, Account> accountMap = accountFinder.findAccountFromJournal(ledger, journalUpdate.entries());
+		
+		Journal journal = journalCommand.updateJournal(ledger, accountMap, journalUpdate);
+		
+		return JournalUpdateResponse.of(journal);
 	}
 	
 }
