@@ -45,7 +45,7 @@ public class AccountFinderService implements AccountFinder {
 				.map(publicId -> new PublicId(publicId))
 				.toList();
 		
-		List<Account> accounts = accountRepo.findByLedgerAndAccountPublicIdIn(ledger, publicIds);
+		List<Account> accounts = accountRepo.findByLedgerAndAccountPublicIdInWithCategory(ledger, publicIds);
 		
 		Map<PublicId, Account> accountMap = accounts.stream()
 				.collect(Collectors.toMap(

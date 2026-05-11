@@ -289,8 +289,8 @@ public class FinanceCommandUsecaseTest {
 	}
 	
 	@Test
-	@DisplayName("거래 입력")
-	void createJournal() {
+	@DisplayName("거래 입력_지출거래")
+	void createJournalExpense() {
 		PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
 		
 		AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
@@ -325,6 +325,90 @@ public class FinanceCommandUsecaseTest {
 		
 		assertThat(journal.message()).isEqualTo(
 				"[2026-05-01 / 지출거래] 체크카드 계좌에서 생활용품(으)로 55,000원이 지출되었습니다."
+		);
+		
+		assertThat(journal.journalId()).isNotNull();
+	}
+	
+	@Test
+	@DisplayName("거래 입력_수입거래")
+	void createJournalIncome() {
+		PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+		
+		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+				AccountType.INCOME,
+				"아르바이트 월급",
+				"Memo",
+				AccountOptionTemplate.FIXED_INCOME
+		);
+		
+		AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"체크카드",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		PublicId debitPID = createAccount(memberPID, ledgerPID, debitCreateRequest);
+		PublicId creditPID = createAccount(memberPID, ledgerPID, creditCreateRequest);
+		
+		JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+				LocalDate.of(2026, 5, 1),
+				55000L,
+				"Journal Memo",
+				TransactionType.INCOME,
+				Map.of(
+						EntrySide.DEBIT, debitPID.publicId(),
+						EntrySide.CREDIT, creditPID.publicId()
+				)
+		);
+		
+		JournalCreateResponse journal = financeCommand.createJournal(memberPID, ledgerPID, journalCreateRequest);
+		
+		assertThat(journal.message()).isEqualTo(
+				"[2026-05-01 / 수입거래] 체크카드 계좌에 아르바이트 월급(으)로 55,000원이 입금되었습니다."
+		);
+		
+		assertThat(journal.journalId()).isNotNull();
+	}
+	
+	@Test
+	@DisplayName("거래 입력_이체거래")
+	void createJournalTransfer() {
+		PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+		
+		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"국민체크카드",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"우리체크카드",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		PublicId debitPID = createAccount(memberPID, ledgerPID, debitCreateRequest);
+		PublicId creditPID = createAccount(memberPID, ledgerPID, creditCreateRequest);
+		
+		JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+				LocalDate.of(2026, 5, 1),
+				55000L,
+				"Journal Memo",
+				TransactionType.TRANSFER,
+				Map.of(
+						EntrySide.DEBIT, debitPID.publicId(),
+						EntrySide.CREDIT, creditPID.publicId()
+				)
+		);
+		
+		JournalCreateResponse journal = financeCommand.createJournal(memberPID, ledgerPID, journalCreateRequest);
+		
+		assertThat(journal.message()).isEqualTo(
+				"[2026-05-01 / 이체거래] 국민체크카드 계좌에서 우리체크카드 계좌로 55,000원이 이체되었습니다."
 		);
 		
 		assertThat(journal.journalId()).isNotNull();

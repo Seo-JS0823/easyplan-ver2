@@ -38,11 +38,12 @@ public class JournalCommandService implements JournalCommand {
 			journal.addEntryLine(entry);
 		}
 		
-		journal.validateSave();
+		journal.validateSavable();
 		
 		return journalRepo.save(journal);
 	}
 
+	// 거래 내역 수정
 	@Override
 	public Journal updateJournal(Ledger ledger, Map<EntrySide, Account> accountMap, JournalUpdateRequest journalUpdate) {
 		Journal journal = journalFinder.findJournal(ledger, journalUpdate.journalId());
@@ -53,7 +54,7 @@ public class JournalCommandService implements JournalCommand {
 		
 		journal.changeEntryLineWithAmount(entries, journalUpdate);
 		
-		journal.validateSave();
+		journal.validateSavable();
 		
 		return journalRepo.save(journal);
 	}

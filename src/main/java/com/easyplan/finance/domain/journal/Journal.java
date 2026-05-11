@@ -9,6 +9,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan.finance.domain.EntrySide;
+import com.easyplan.finance.domain.account.AccountType;
 import com.easyplan.finance.domain.journal.exception.JournalErrorCode;
 import com.easyplan.finance.domain.journal.exception.JournalException;
 import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateRequest;
@@ -57,7 +58,7 @@ public class Journal extends BaseEntity {
 	private TransactionType transactionType;
 	
 	@OneToMany(mappedBy = "journal", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<EntryLine> entries = new ArrayList<>();
+	private List<EntryLine> entries = new ArrayList<>(2);
 	
 	public static Journal create(Ledger ledger, JournalCreateRequest journalCreate) {
 		Journal journal = new Journal();
@@ -77,12 +78,12 @@ public class Journal extends BaseEntity {
 			case CREDIT : return this.entries.stream()
 						.filter(line -> line.isCredit())
 						.findFirst()
-						.get();
+						.orElseThrow(() -> new JournalException(JournalErrorCode.JOURNAL_SYSTEM_ERROR));
 			
 			case DEBIT : return this.entries.stream()
 						.filter(line -> line.isDebit())
 						.findFirst()
-						.get();
+						.orElseThrow(() -> new JournalException(JournalErrorCode.JOURNAL_SYSTEM_ERROR));
 			
 			default : throw new JournalException(JournalErrorCode.JOURNAL_SYSTEM_ERROR);
 		}
@@ -96,7 +97,7 @@ public class Journal extends BaseEntity {
 	}
 	
 	public void changeEntryLineWithAmount(List<EntryLine> entries, JournalUpdateRequest journalUpdate) {
-		validateEntryLines();
+		validateEntryLineSave();
 		
 		this.entries.clear();
 		
@@ -107,6 +108,11 @@ public class Journal extends BaseEntity {
 		changeAmount(journalUpdate.amount());
 	}
 	
+	public void validateSavable() {
+		validateEntryLineSave();
+		validateTransactionType();
+	}
+	
 	private void changeAmount(Long amount) {
 		this.amount = new Money(amount);
 		
@@ -114,11 +120,7 @@ public class Journal extends BaseEntity {
 			line.changeAmount(this.amount);
 		}
 		
-		validateEntryLines();
-	}
-	
-	public void validateSave() {
-		validateEntryLines();
+		validateEntryLineSave();
 	}
 	
 	private void validateEntryLine() {
@@ -127,7 +129,7 @@ public class Journal extends BaseEntity {
 		}
 	}
 	
-	private void validateEntryLines() {
+	private void validateEntryLineSave() {
 		if(this.entries.size() != 2) {
 			throw new JournalException(JournalErrorCode.JOURNAL_SYSTEM_ERROR);
 		}
@@ -160,6 +162,15 @@ public class Journal extends BaseEntity {
 		
 		if(this.amount.getAmount() != debitAmount) {
 			throw new JournalException(JournalErrorCode.JOURNAL_SYSTEM_ERROR);
+		}
+	}
+	
+	private void validateTransactionType() {
+		AccountType debit = getEntryLine(EntrySide.DEBIT).getAccountType();
+		AccountType credit = getEntryLine(EntrySide.CREDIT).getAccountType();
+		
+		if(!this.transactionType.isValidPlacement(debit, credit)) {
+			throw new JournalException(JournalErrorCode.INVALID_ENTRY_PAIR);
 		}
 	}
 	

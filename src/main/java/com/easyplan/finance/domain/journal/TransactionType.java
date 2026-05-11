@@ -3,6 +3,7 @@ package com.easyplan.finance.domain.journal;
 import com.easyplan._shared.util.MoneyFormatter;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
+import com.easyplan.finance.domain.account.AccountType;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +13,30 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public enum TransactionType {
-	EXPENSE("지출"),
-	INCOME("수입"),
-	TRANSFER("이체")
+	EXPENSE("지출") {
+		@Override
+		public boolean isValidPlacement(AccountType debit, AccountType credit) {
+			return debit == AccountType.EXPENSE &&
+					   (credit == AccountType.ASSET || credit == AccountType.LIABILITIES);
+		}
+	},
+	INCOME("수입") {
+		@Override
+		public boolean isValidPlacement(AccountType debit, AccountType credit) {
+			return debit == AccountType.ASSET && credit == AccountType.INCOME;
+		}
+	},
+	TRANSFER("이체") {
+		@Override
+		public boolean isValidPlacement(AccountType debit, AccountType credit) {
+			return debit == AccountType.ASSET && credit == AccountType.ASSET;
+		}
+	},
 	
 	;
 	private final String description;
+	
+	public abstract boolean isValidPlacement(AccountType debit, AccountType credit);
 	
 	public String createdMessage(Journal journal) {
 		Account debit = journal.getEntryLine(EntrySide.DEBIT).getAccount();

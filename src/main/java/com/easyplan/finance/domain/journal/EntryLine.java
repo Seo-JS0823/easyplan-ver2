@@ -3,6 +3,7 @@ package com.easyplan.finance.domain.journal;
 import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
+import com.easyplan.finance.domain.account.AccountType;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -49,6 +50,10 @@ public class EntryLine extends BaseEntity {
 		line.side = side;
 		
 		return line;
+	}
+	
+	AccountType getAccountType() {
+		return this.account.getCategory().getAccountType();
 	}
 	
 	boolean isDebit() {

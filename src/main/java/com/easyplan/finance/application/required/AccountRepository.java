@@ -29,5 +29,12 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 	
 	boolean existsByCategoryAndAccountNameAndIdNot(Category category, String accountName, Long id);
 	
-	List<Account> findByLedgerAndAccountPublicIdIn(Ledger ledger, List<PublicId> accountPublicId);
+	@Query("""
+			SELECT a FROM Account a
+			JOIN FETCH a.category
+			WHERE
+					a.ledger = :ledger
+					AND a.accountPublicId IN :accountPublicId
+	""")
+	List<Account> findByLedgerAndAccountPublicIdInWithCategory(Ledger ledger, List<PublicId> accountPublicId);
 }
