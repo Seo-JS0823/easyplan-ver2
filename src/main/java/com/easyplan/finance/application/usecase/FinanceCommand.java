@@ -12,6 +12,8 @@ import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.provided.JournalCommand;
 import com.easyplan.finance.application.provided.LedgerCommand;
 import com.easyplan.finance.application.provided.LedgerFinder;
+import com.easyplan.finance.application.usecase.exception.FinanceErrorCode;
+import com.easyplan.finance.application.usecase.exception.FinanceException;
 import com.easyplan.finance.application.usecase.response.AccountResponse.AccountCreateResponse;
 import com.easyplan.finance.application.usecase.response.AccountResponse.AccountUpdateResponse;
 import com.easyplan.finance.application.usecase.response.JournalResponse.JournalCreateResponse;
@@ -50,6 +52,7 @@ public class FinanceCommand {
 	private final JournalCommand journalCommand;
 	
 	// 가계부 생성
+	@TraceTime
 	public LedgerCreateResponse createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreate) {
 		// 가계부 생성
 		Ledger ledger = ledgerCommand.createLedger(memberPublicId, ledgerCreate);
@@ -64,6 +67,7 @@ public class FinanceCommand {
 	}
 	
 	// 가계부 정보 수정
+	@TraceTime
 	public LedgerInfoUpdateResponse updateLedgerInfo(PublicId memberPublicId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo) {
 		Ledger ledger = ledgerCommand.updateInfo(memberPublicId, ledgerPublicId, ledgerInfo);
 		
@@ -71,6 +75,7 @@ public class FinanceCommand {
 	}
 	
 	// 가계부 회계 시작일 수정
+	@TraceTime
 	public LedgerFiscalUpdateResponse updateLedgerFiscal(PublicId memberPublicId, PublicId ledgerPublicId, LedgerFiscalUpdate ledgerFiscal) {
 		Ledger ledger = ledgerCommand.updateFiscal(memberPublicId, ledgerPublicId, ledgerFiscal);
 		
@@ -78,11 +83,13 @@ public class FinanceCommand {
 	}
 	
 	// 가계부 삭제
+	@TraceTime
 	public void deleteLedger(PublicId memberPublicId, PublicId ledgerPublicId) {
 		ledgerCommand.delete(memberPublicId, ledgerPublicId);
 	}
 	
 	// 계정 항목 생성
+	@TraceTime
 	public AccountCreateResponse createAccount(PublicId memberPublicId, PublicId ledgerPublicId, AccountCreateRequest accountCreate) {
 		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
 		
@@ -92,6 +99,7 @@ public class FinanceCommand {
 	}
 	
 	// 계정 항목 정보 변경
+	@TraceTime
 	public AccountUpdateResponse updateAccount(PublicId memberPublicId, PublicId ledgerPublicId, PublicId accountPublicId, AccountUpdateRequest accountUpdate) {
 		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
 		
@@ -101,6 +109,7 @@ public class FinanceCommand {
 	}
 	
 	// 계정 항목 삭제
+	@TraceTime
 	public void deactivateAccount(PublicId memberPublicId, PublicId ledgerPublicId, PublicId accountPublicId)	{
 		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
 		
@@ -108,7 +117,10 @@ public class FinanceCommand {
 	}
 	
 	// 거래 입력
+	@TraceTime
 	public JournalCreateResponse createJournal(PublicId memberPublicId, PublicId ledgerPublicId, JournalCreateRequest journalCreate) {
+		validateJournalRequest(journalCreate.entries());
+		
 		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
 		
 		Map<EntrySide, Account> accountMap = accountFinder.findAccountFromJournal(ledger, journalCreate.entries());
@@ -119,7 +131,10 @@ public class FinanceCommand {
 	}
 	
 	// 거래 내역 수정
+	@TraceTime
 	public JournalUpdateResponse updateJournal(PublicId memberPublicId, PublicId ledgerPublicId, JournalUpdateRequest journalUpdate) {
+		validateJournalRequest(journalUpdate.entries());
+		
 		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
 		
 		Map<EntrySide, Account> accountMap = accountFinder.findAccountFromJournal(ledger, journalUpdate.entries());
@@ -129,4 +144,20 @@ public class FinanceCommand {
 		return JournalUpdateResponse.of(journal);
 	}
 	
+	// 거래 내역 삭제
+	@TraceTime
+	public void deleteJournal(PublicId memberPublicId, PublicId ledgerPublicId, Long journalId) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+		
+		journalCommand.deleteJournal(ledger, journalId);
+	}
+	
+	private void validateJournalRequest(Map<EntrySide, String> entriesFromRequest) {
+		if(entriesFromRequest.size() != 2
+				|| !entriesFromRequest.containsKey(EntrySide.CREDIT)
+				|| !entriesFromRequest.containsKey(EntrySide.DEBIT)) {
+			
+			throw new FinanceException(FinanceErrorCode.INVALID_JOURNAL_ENTRY_COUNT);
+		}
+	}
 }

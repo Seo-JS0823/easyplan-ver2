@@ -31,13 +31,13 @@ public class AccountPolicy {
 	}
 	
 	public void validateAccountTypeMatch(AccountCreateRequest accountCreate) {
-		if(!accountCreate.accountType().equals(accountCreate.option().getAccountType())) {
+		if(!accountCreate.accountType().equals(accountCreate.optionCode().getAccountType())) {
 			throw new AccountException(AccountErrorCode.ACCOUNT_TYPE_MISMATH);
 		}
 	}
 	
 	public void validateAccountTypeMatch(AccountUpdateRequest accountUpdate, Account account) {
-		AccountType a = accountUpdate.option().getAccountType();
+		AccountType a = accountUpdate.optionCode().getAccountType();
 		AccountType b = account.getCategory().getAccountType();
 		
 		if(!a.equals(b)) {

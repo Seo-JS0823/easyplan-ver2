@@ -97,7 +97,7 @@ public class AccountCommandService implements AccountCommand {
 		// 해당 카테고리에 동일한 이름의 계정 항목이 있는지 검사
 		accountPolicy.validateAccountName(category, accountCreate.accountName());
 		
-		AccountOption option = getAccountOption(accountCreate.option());
+		AccountOption option = getAccountOption(accountCreate.optionCode());
 		
 		Account account = Account.create(ledger, category, option, accountCreate.accountName(), accountCreate.accountDescription());
 		
@@ -111,7 +111,7 @@ public class AccountCommandService implements AccountCommand {
 		// 지원하는 계정 항목인지 검사
 		accountPolicy.validateAccountTypeMatch(accountUpdate, account);
 		
-		AccountOption option = getAccountOption(accountUpdate.option());
+		AccountOption option = getAccountOption(accountUpdate.optionCode());
 		
 		// 해당 카테고리에 동일한 이름의 계정 항목이 있는지 검사
 		accountPolicy.validateAccountNameForUpdate(account.getCategory(), accountUpdate.accountName(), account.getId());

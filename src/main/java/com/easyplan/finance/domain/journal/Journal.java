@@ -3,12 +3,14 @@ package com.easyplan.finance.domain.journal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan.finance.domain.EntrySide;
+import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountType;
 import com.easyplan.finance.domain.journal.exception.JournalErrorCode;
 import com.easyplan.finance.domain.journal.exception.JournalException;
@@ -88,6 +90,22 @@ public class Journal extends BaseEntity {
 			default : throw new JournalException(JournalErrorCode.JOURNAL_SYSTEM_ERROR);
 		}
 	}
+
+	public AccountType getAccountType(EntrySide side) {
+		return getEntryLine(side).getAccountType();
+	}
+	
+	public Account getAccount(EntrySide side) {
+		return getEntryLine(side).getAccount();
+	}
+	
+	public String getAccountName(EntrySide side) {
+		return getEntryLine(side).getAccountName();
+	}
+	
+	public Money getAmount(EntrySide side) {
+		return getEntryLine(side).getAmount();
+	}
 	
 	public void addEntryLine(EntryLine line) {
 		validateEntryLine();
@@ -96,13 +114,22 @@ public class Journal extends BaseEntity {
 		line.linkJournal(this);
 	}
 	
-	public void changeEntryLineWithAmount(List<EntryLine> entries, JournalUpdateRequest journalUpdate) {
+	public void changeEntryLineWithAmount(List<EntryLine> entries, Map<EntrySide, Account> accountMap, JournalUpdateRequest journalUpdate) {
 		validateEntryLineSave();
 		
-		this.entries.clear();
+		this.memo = journalUpdate.memo();
+		this.transactionDate = journalUpdate.transactionDate();
 		
-		for (EntryLine line : entries) {
-			addEntryLine(line);
+		for (EntryLine entry : entries) {
+			if(entry.isCredit()) {
+				entry.changeAccount(accountMap.get(EntrySide.CREDIT));
+			}
+			else if(entry.isDebit()) {
+				entry.changeAccount(accountMap.get(EntrySide.DEBIT));
+			}
+			else {
+				throw new JournalException(JournalErrorCode.INVALID_ENTRY_PAIR);
+			}
 		}
 		
 		changeAmount(journalUpdate.amount());

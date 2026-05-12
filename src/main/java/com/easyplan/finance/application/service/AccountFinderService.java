@@ -47,6 +47,14 @@ public class AccountFinderService implements AccountFinder {
 		
 		List<Account> accounts = accountRepo.findByLedgerAndAccountPublicIdInWithCategory(ledger, publicIds);
 		
+		if(accounts.size() != 2) {
+			throw new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND);
+		}
+		
+		for (Account acc : accounts) {
+			acc.validateActive();
+		}
+		
 		Map<PublicId, Account> accountMap = accounts.stream()
 				.collect(Collectors.toMap(
 						Account::getAccountPublicId,
@@ -62,5 +70,10 @@ public class AccountFinderService implements AccountFinder {
 		});
 		
 		return result;
+	}
+
+	@Override
+	public List<Account> findByLedger(Ledger ledger) {
+		return accountRepo.findByLedger(ledger);
 	}
 }

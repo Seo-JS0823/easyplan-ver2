@@ -13,6 +13,8 @@ import com.easyplan.finance.domain.account.Category;
 import com.easyplan.finance.domain.ledger.Ledger;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
+	List<Account> findByLedger(Ledger ledger);
+	
 	Optional<Account> findByLedgerAndAccountPublicId(Ledger ledger, PublicId accountPublicId);
 	
 	@Query("""

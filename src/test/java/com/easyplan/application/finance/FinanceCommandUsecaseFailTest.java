@@ -2,7 +2,9 @@ package com.easyplan.application.finance;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +18,9 @@ import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.provided.LedgerFinder;
 import com.easyplan.finance.application.usecase.FinanceCommand;
+import com.easyplan.finance.application.usecase.exception.FinanceErrorCode;
+import com.easyplan.finance.application.usecase.exception.FinanceException;
+import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountBasicTemplate;
 import com.easyplan.finance.domain.account.AccountOptionTemplate;
@@ -24,6 +29,8 @@ import com.easyplan.finance.domain.account.exception.AccountErrorCode;
 import com.easyplan.finance.domain.account.exception.AccountException;
 import com.easyplan.finance.domain.account.request.AccountRequest.AccountCreateRequest;
 import com.easyplan.finance.domain.account.request.AccountRequest.AccountUpdateRequest;
+import com.easyplan.finance.domain.journal.TransactionType;
+import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateRequest;
 import com.easyplan.finance.domain.ledger.LedgerType;
 import com.easyplan.finance.domain.ledger.exception.LedgerErrorCode;
 import com.easyplan.finance.domain.ledger.exception.LedgerException;
@@ -256,7 +263,215 @@ public class FinanceCommandUsecaseFailTest {
 		.hasMessageContaining(AccountErrorCode.ACCOUNT_TYPE_MISMATH.getMessage());
 	}
 	
-	// NEXT: Account Deactivate Fail Test
+	@Test
+	@DisplayName("계정 항목 삭제 실패_다른 가계부 소유주")
+	void deactivateAccount_NotLedgerOnwer() {
+		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		
+		AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"Account",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		PublicId accountPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, accountCreateRequest);
+		PublicId accountPIDMember2 = createAccount(member2PID, createdLedgerPIDMember2, accountCreateRequest);
+		
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member1PID, createdLedgerPIDMember2, accountPIDMember1))
+		.isInstanceOf(LedgerException.class)
+		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
+		
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member2PID, createdLedgerPIDMember1, accountPIDMember2))
+		.isInstanceOf(LedgerException.class)
+		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
+	}
+	
+	@Test
+	@DisplayName("계정 항목 삭제 실패_다른 소유주의 계정 항목")
+	void deactivateAccount_NotAccountOwner() {
+		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		
+		AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"Account",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		PublicId accountPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, accountCreateRequest);
+		PublicId accountPIDMember2 = createAccount(member2PID, createdLedgerPIDMember2, accountCreateRequest);
+		
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member1PID, createdLedgerPIDMember1, accountPIDMember2))
+		.isInstanceOf(AccountException.class)
+		.hasMessageContaining(AccountErrorCode.ACCOUNT_NOT_FOUND.getMessage());
+		
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member2PID, createdLedgerPIDMember2, accountPIDMember1))
+		.isInstanceOf(AccountException.class)
+		.hasMessageContaining(AccountErrorCode.ACCOUNT_NOT_FOUND.getMessage());
+	}
+	
+	@Test
+	@DisplayName("거래 입력 실패_다른 소유주의 가계부")
+	void createJournal_NotOwnerLedger() {
+		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		
+		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"Account",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+				AccountType.EXPENSE,
+				"Expense",
+				"Memo",
+				AccountOptionTemplate.VARIABLE_EXPENSE
+		);
+		
+		PublicId creditPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, creditCreateRequest);
+		PublicId debitPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, debitCreateRequest);
+		
+		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
+				55000L,
+				TransactionType.EXPENSE,
+				debitPIDMember1,
+				creditPIDMember1
+		);
+		
+		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember2, journalCreateRequest))
+		.isInstanceOf(LedgerException.class)
+		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
+		
+		assertThatThrownBy(() -> financeCommand.createJournal(member2PID, createdLedgerPIDMember1, journalCreateRequest))
+		.isInstanceOf(LedgerException.class)
+		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
+	}
+	
+	@Test
+	@DisplayName("거래 입력 실패_존재하지 않는 계정")
+	void createJournal_NotFoundAccount() {
+		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		
+		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
+				55000L,
+				TransactionType.EXPENSE,
+				member1PID,
+				member2PID
+		);
+		
+		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		.isInstanceOf(AccountException.class)
+		.hasMessageContaining(AccountErrorCode.ACCOUNT_NOT_FOUND.getMessage());
+	}
+	
+	@Test
+	@DisplayName("거래 입력 실패_계정 선택 안한 요청")
+	void createJournal_InvalidJournalEntryCount() {
+		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		
+		JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+				LocalDate.of(2026, 5, 1),
+				55000L,
+				"memo",
+				TransactionType.EXPENSE,
+				Map.of()
+		);
+		
+		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		.isInstanceOf(FinanceException.class)
+		.hasMessageContaining(FinanceErrorCode.INVALID_JOURNAL_ENTRY_COUNT.getMessage());
+	}
+	
+	@Test
+	@DisplayName("거래 입력 실패_멤버 비활성화 계정")
+	void createJournal_MemberDeactivate() {
+		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		
+		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"Account",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+				AccountType.EXPENSE,
+				"Expense",
+				"Memo",
+				AccountOptionTemplate.VARIABLE_EXPENSE
+		);
+		
+		PublicId creditPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, creditCreateRequest);
+		PublicId debitPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, debitCreateRequest);
+		
+		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
+				55000L,
+				TransactionType.EXPENSE,
+				debitPIDMember1,
+				creditPIDMember1
+		);
+		
+		memberDeactivate(member1PID);
+		
+		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		.isInstanceOf(MemberException.class)
+		.hasMessageContaining(MemberExceptionCode.MEMBER_CANNOT_USE_SERVICE.getMessage());
+	}
+	
+	@Test
+	@DisplayName("거래 입력 실패_삭제된 상태의 계정 포함")
+	void createJournal_DeactivateAccount() {
+		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		
+		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+				AccountType.ASSET,
+				"Account",
+				"Memo",
+				AccountOptionTemplate.BANK_ACCOUNT
+		);
+		
+		AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+				AccountType.EXPENSE,
+				"Expense",
+				"Memo",
+				AccountOptionTemplate.VARIABLE_EXPENSE
+		);
+		
+		PublicId creditPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, creditCreateRequest);
+		PublicId debitPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, debitCreateRequest);
+		
+		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
+				55000L,
+				TransactionType.EXPENSE,
+				debitPIDMember1,
+				creditPIDMember1
+		);
+		
+		financeCommand.deactivateAccount(member1PID, createdLedgerPIDMember1, debitPIDMember1);
+		
+		em.flush();
+		em.clear();
+		
+		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		.isInstanceOf(AccountException.class)
+		.hasMessageContaining(AccountErrorCode.ACCOUNT_DEACTIVATE.getMessage());
+	}
+	
+	private JournalCreateRequest createJournalCreateRequest(Long amount, TransactionType type, PublicId debitPID, PublicId creditPID) {
+		return new JournalCreateRequest(LocalDate.of(2026, 5, 1), amount, "memo", type, Map.of(
+				EntrySide.DEBIT, debitPID.publicId(),
+				EntrySide.CREDIT, creditPID.publicId()
+		));
+	}
+	
+	private PublicId createAccount(PublicId memberPublicId, PublicId ledgerPublicId, AccountCreateRequest accountCreate) {
+		return new PublicId(financeCommand.createAccount(memberPublicId, ledgerPublicId, accountCreate).accountPublicId());
+	}
 	
 	private PublicId createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreateRequest) {
 		PublicId createdLedgerPID = new PublicId(financeCommand.createLedger(memberPublicId, ledgerCreateRequest).ledgerPublicId());
@@ -265,6 +480,13 @@ public class FinanceCommandUsecaseFailTest {
 		em.clear();
 		
 		return createdLedgerPID;
+	}
+	
+	private void memberDeactivate(PublicId memberPublicId) {
+		memberCommand.deactivate(memberPublicId, new MemberDeactivate(password));
+		
+		em.flush();
+		em.clear();
 	}
 	
 }

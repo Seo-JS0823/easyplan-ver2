@@ -53,7 +53,11 @@ public class EntryLine extends BaseEntity {
 	}
 	
 	AccountType getAccountType() {
-		return this.account.getCategory().getAccountType();
+		return this.account.getAccountType();
+	}
+	
+	String getAccountName() {
+		return this.account.getAccountName();
 	}
 	
 	boolean isDebit() {
@@ -66,6 +70,10 @@ public class EntryLine extends BaseEntity {
 	
 	void linkJournal(Journal journal) {
 		this.journal = journal;
+	}
+	
+	void changeAccount(Account account) {
+		this.account = account;
 	}
 	
 	void changeAmount(Money amount) {

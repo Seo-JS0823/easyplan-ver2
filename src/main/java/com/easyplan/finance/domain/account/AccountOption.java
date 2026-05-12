@@ -19,21 +19,21 @@ public class AccountOption extends BaseEntity {
 	
 	@Column(name = "option_code", nullable = false, updatable = false)
 	@Enumerated(EnumType.STRING)
-	private AccountOptionTemplate option;
+	private AccountOptionTemplate optionCode;
 	
 	public static AccountOption create(AccountOptionTemplate option) {
 		AccountOption accountOption = new AccountOption();
 		
-		accountOption.option = option;
+		accountOption.optionCode = option;
 		
 		return accountOption;
 	}
 	
 	public String getOptionName() {
-		return this.option.getOptionName();
+		return this.optionCode.getOptionName();
 	}
 	
 	public AccountType getAccountType() {
-		return this.option.getAccountType();
+		return this.optionCode.getAccountType();
 	}
 }

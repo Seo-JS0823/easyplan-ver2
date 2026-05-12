@@ -13,4 +13,6 @@ public interface JournalCommand {
 	Journal createJournal(Ledger ledger, Map<EntrySide, Account> accountMap, JournalCreateRequest journalCreate);
 	
 	Journal updateJournal(Ledger ledger, Map<EntrySide, Account> accountMap, JournalUpdateRequest journalUpdate);
+	
+	void deleteJournal(Ledger ledger, Long journalId);
 }

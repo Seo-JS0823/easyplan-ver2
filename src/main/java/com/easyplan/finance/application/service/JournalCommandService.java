@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.easyplan.finance.application.provided.JournalCommand;
 import com.easyplan.finance.application.provided.JournalFinder;
+import com.easyplan.finance.application.required.EntryLineRepository;
 import com.easyplan.finance.application.required.JournalRepository;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
@@ -22,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JournalCommandService implements JournalCommand {
 	private final JournalRepository journalRepo;
+	
+	private final EntryLineRepository entryRepo;
 	
 	private final JournalFinder journalFinder;
 
@@ -48,19 +51,21 @@ public class JournalCommandService implements JournalCommand {
 	public Journal updateJournal(Ledger ledger, Map<EntrySide, Account> accountMap, JournalUpdateRequest journalUpdate) {
 		Journal journal = journalFinder.findJournal(ledger, journalUpdate.journalId());
 		
-		List<EntryLine> entries = accountMap.entrySet().stream()
-				.map(entry -> EntryLine.create(entry.getValue(), journal.getAmount(), entry.getKey()))
-				.toList();
+		List<EntryLine> entries = entryRepo.findByJournal(journal);
 		
-		journal.changeEntryLineWithAmount(entries, journalUpdate);
+		journal.changeEntryLineWithAmount(entries, accountMap, journalUpdate);
 		
 		journal.validateSavable();
 		
 		return journalRepo.save(journal);
 	}
+
+	// 거래 내역 삭제
+	@Override
+	public void deleteJournal(Ledger ledger, Long journalId) {
+		Journal journal = journalFinder.findJournal(ledger, journalId);
+		
+		journalRepo.delete(journal);
+	}
 	
-	// 거래 수정
-	
-	
-	// 거래 삭제
 }

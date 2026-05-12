@@ -1,0 +1,517 @@
+/* 2026-05-12 테스트 방식 피드백 받고 수정하기 위해 주석 처리
+@Autowired
+private FinanceCommand financeCommand;
+
+@Autowired
+private LedgerFinder ledgerFinder;
+
+@Autowired
+private AccountFinder accountFinder;
+
+@Autowired
+private MemberCommand memberCommand;
+
+@Autowired
+private JournalFinder journalFinder;
+
+@Autowired
+private EntryLineRepository entryLineRepo;
+
+@Autowired
+private EntityManager em;
+
+Member member;
+
+PublicId memberPID;
+
+MemberRegisterRequest memberRegisterRequest;
+
+LedgerCreateRequest ledgerCreateRequest;
+
+@BeforeEach
+void setUp() {
+	memberRegisterRequest = MemberFix.memberRegisterRequest();
+	member = memberCommand.register(memberRegisterRequest);
+	
+	member.activate();
+	
+	memberPID = member.getMemberPublicId();
+	
+	em.flush();
+	em.clear();
+	
+	ledgerCreateRequest = new LedgerCreateRequest(
+			LedgerType.PERSONAL,
+			"Ledger_Name",
+			"Ledger_Description",
+			List.of(
+					AccountBasicTemplate.ASS01,
+					AccountBasicTemplate.LIA01,
+					AccountBasicTemplate.INC01,
+					AccountBasicTemplate.EXP01
+			)
+	);
+}
+
+@Test
+@DisplayName("가계부 생성 테스트")
+void createLedger() {
+	LedgerCreateResponse accounts = financeCommand.createLedger(member.getMemberPublicId(), ledgerCreateRequest);
+	
+	assertThat(accounts.accountCount()).isEqualTo(5);
+}
+
+@Test
+@DisplayName("가계부 정보 수정 테스트")
+void updateLedgerInfo() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	String ledgerName = "Ledger_Rename";
+	String ledgerDescription = "Ledger_Redescription";
+	
+	LedgerInfoUpdate ledgerInfoUpdateRequest = new LedgerInfoUpdate(ledgerName, ledgerDescription);
+	
+	LedgerInfoUpdateResponse response = financeCommand.updateLedgerInfo(
+			member.getMemberPublicId(),
+			ledgerPID,
+			ledgerInfoUpdateRequest
+	);
+	
+	em.flush();
+	em.clear();
+	
+	assertThat(response.ledgerName()).isEqualTo(ledgerName);
+	assertThat(response.ledgerDescription()).isEqualTo(ledgerDescription);
+}
+
+@Test
+@DisplayName("가계부 회계 시작일 수정 테스트")
+void updateLedgerFiscal() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	LedgerFiscalUpdate ledgerFiscalUpdateRequest = new LedgerFiscalUpdate(10);
+	
+	LedgerFiscalUpdateResponse response = financeCommand.updateLedgerFiscal(
+			member.getMemberPublicId(),
+			ledgerPID,
+			ledgerFiscalUpdateRequest
+	);
+	
+	em.flush();
+	em.clear();
+	
+	assertThat(response.fiscalDay()).isEqualTo(ledgerFiscalUpdateRequest.fiscalDay());
+}
+
+@Test
+@DisplayName("가계부 삭제 테스트")
+void deleteLedger() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	financeCommand.deleteLedger(member.getMemberPublicId(), ledgerPID);
+	
+	em.flush();
+	em.clear();
+	
+	assertThatThrownBy(() -> ledgerFinder.findByLedger(ledgerPID))
+	.isInstanceOf(LedgerException.class)
+	.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
+}
+
+@Test
+@DisplayName("계정 항목 생성")
+void createAccount() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	// AccountType accountType, String accountName, String accountDescription, AccountOptionTemplate option
+	String accountName = "Name";
+	String accountDescription = "Memo";
+	
+	AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			accountName,
+			accountDescription,
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	AccountCreateResponse response = financeCommand.createAccount(
+			member.getMemberPublicId(),
+			ledgerPID,
+			accountCreateRequest
+	);
+	
+	assertThat(response.accountName()).isEqualTo(accountName);
+	assertThat(response.accountDescription()).isEqualTo(accountDescription);
+	assertThat(response.categoryName()).isEqualTo(AccountType.ASSET.getCategoryName());
+	assertThat(response.optionName()).isEqualTo(AccountOptionTemplate.BANK_ACCOUNT.getOptionName());
+}
+
+@Test
+@DisplayName("계정 항목 수정")
+void updateAccount() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	// AccountType accountType, String accountName, String accountDescription, AccountOptionTemplate option
+	String accountName = "Name";
+	String accountDescription = "Memo";
+	
+	AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			accountName,
+			accountDescription,
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	AccountCreateResponse account = financeCommand.createAccount(
+			member.getMemberPublicId(),
+			ledgerPID,
+			accountCreateRequest
+	);
+	
+	em.flush();
+	em.clear();
+	
+	String newAccountName = "New Name";
+	String newDescription = "New Memo";
+	
+	AccountUpdateRequest accountUpdateRequest = new AccountUpdateRequest(
+			newAccountName, newDescription, AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	financeCommand.updateAccount(
+			member.getMemberPublicId(),
+			ledgerPID,
+			new PublicId(account.accountPublicId()),
+			accountUpdateRequest
+	);
+	
+	em.flush();
+	em.clear();
+	
+	Account result = accountFinder.findActiveAccount(
+			ledgerFinder.findByLedger(ledgerPID),
+			new PublicId(account.accountPublicId())
+	);
+	
+	assertThat(result.getAccountName()).isEqualTo(newAccountName);
+	assertThat(result.getAccountDescription()).isEqualTo(newDescription);
+	assertThat(result.getOption().getOptionName()).isEqualTo(AccountOptionTemplate.BANK_ACCOUNT.getOptionName());
+}
+
+@Test
+@DisplayName("계정 항목 삭제 (Deactivate)")
+void deactivateAccount() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	// AccountType accountType, String accountName, String accountDescription, AccountOptionTemplate option
+	String accountName = "Name";
+	String accountDescription = "Memo";
+	
+	AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			accountName,
+			accountDescription,
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	AccountCreateResponse account = financeCommand.createAccount(
+			member.getMemberPublicId(),
+			ledgerPID,
+			accountCreateRequest
+	);
+	
+	em.flush();
+	em.clear();
+	
+	financeCommand.deactivateAccount(member.getMemberPublicId(),
+			ledgerPID,
+			new PublicId(account.accountPublicId())
+	);
+	
+	em.flush();
+	em.clear();
+	
+	assertThatThrownBy(() -> accountFinder.findActiveAccount(
+			ledgerFinder.findByLedger(ledgerPID),
+			new PublicId(account.accountPublicId())))
+	.isInstanceOf(AccountException.class)
+	.hasMessageContaining(AccountErrorCode.ACCOUNT_NOT_FOUND.getMessage());
+}
+
+@Test
+@DisplayName("거래 입력_지출거래")
+void createJournalExpense() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+			AccountType.EXPENSE,
+			"생활용품",
+			"Memo",
+			AccountOptionTemplate.VARIABLE_EXPENSE
+	);
+	
+	AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			"체크카드",
+			"Memo",
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	PublicId debitPID = createAccount(memberPID, ledgerPID, debitCreateRequest);
+	PublicId creditPID = createAccount(memberPID, ledgerPID, creditCreateRequest);
+	
+	JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+			LocalDate.of(2026, 5, 1),
+			55000L,
+			"Journal Memo",
+			TransactionType.EXPENSE,
+			Map.of(
+					EntrySide.DEBIT, debitPID.publicId(),
+					EntrySide.CREDIT, creditPID.publicId()
+			)
+	);
+	
+	JournalCreateResponse journal = financeCommand.createJournal(memberPID, ledgerPID, journalCreateRequest);
+	
+	assertThat(journal.message()).isEqualTo(
+			"[2026-05-01 / 지출거래] 체크카드 계좌에서 생활용품(으)로 55,000원이 지출되었습니다."
+	);
+	
+	assertThat(journal.journalId()).isNotNull();
+}
+
+@Test
+@DisplayName("거래 입력_수입거래")
+void createJournalIncome() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+			AccountType.INCOME,
+			"아르바이트 월급",
+			"Memo",
+			AccountOptionTemplate.FIXED_INCOME
+	);
+	
+	AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			"체크카드",
+			"Memo",
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	PublicId debitPID = createAccount(memberPID, ledgerPID, debitCreateRequest);
+	PublicId creditPID = createAccount(memberPID, ledgerPID, creditCreateRequest);
+	
+	JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+			LocalDate.of(2026, 5, 1),
+			55000L,
+			"Journal Memo",
+			TransactionType.INCOME,
+			Map.of(
+					EntrySide.DEBIT, debitPID.publicId(),
+					EntrySide.CREDIT, creditPID.publicId()
+			)
+	);
+	
+	JournalCreateResponse journal = financeCommand.createJournal(memberPID, ledgerPID, journalCreateRequest);
+	
+	assertThat(journal.message()).isEqualTo(
+			"[2026-05-01 / 수입거래] 체크카드 계좌에 아르바이트 월급(으)로 55,000원이 입금되었습니다."
+	);
+	
+	assertThat(journal.journalId()).isNotNull();
+}
+
+@Test
+@DisplayName("거래 입력_이체거래")
+void createJournalTransfer() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			"국민체크카드",
+			"Memo",
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			"우리체크카드",
+			"Memo",
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	PublicId debitPID = createAccount(memberPID, ledgerPID, debitCreateRequest);
+	PublicId creditPID = createAccount(memberPID, ledgerPID, creditCreateRequest);
+	
+	JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+			LocalDate.of(2026, 5, 1),
+			55000L,
+			"Journal Memo",
+			TransactionType.TRANSFER,
+			Map.of(
+					EntrySide.DEBIT, debitPID.publicId(),
+					EntrySide.CREDIT, creditPID.publicId()
+			)
+	);
+	
+	JournalCreateResponse journal = financeCommand.createJournal(memberPID, ledgerPID, journalCreateRequest);
+	
+	assertThat(journal.message()).isEqualTo(
+			"[2026-05-01 / 이체거래] 국민체크카드 계좌에서 우리체크카드 계좌로 55,000원이 이체되었습니다."
+	);
+	
+	assertThat(journal.journalId()).isNotNull();
+}
+
+@Test
+@DisplayName("거래 내역 수정")
+void updateJournal() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+			AccountType.EXPENSE,
+			"생활용품",
+			"Memo",
+			AccountOptionTemplate.VARIABLE_EXPENSE
+	);
+	
+	AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			"체크카드",
+			"Memo",
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	AccountCreateRequest creditCreateRequest2 = new AccountCreateRequest(
+			AccountType.LIABILITIES,
+			"신한신용카드",
+			"Memo",
+			AccountOptionTemplate.CREDIT_CARD
+	);
+	
+	PublicId debitPID = createAccount(memberPID, ledgerPID, debitCreateRequest);
+	PublicId creditPID = createAccount(memberPID, ledgerPID, creditCreateRequest);
+	PublicId credit2PID = createAccount(memberPID, ledgerPID, creditCreateRequest2);
+	
+	JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+			LocalDate.of(2026, 5, 1),
+			55000L,
+			"Journal Memo",
+			TransactionType.EXPENSE,
+			Map.of(
+					EntrySide.DEBIT, debitPID.publicId(),
+					EntrySide.CREDIT, creditPID.publicId()
+			)
+	);
+	
+	JournalCreateResponse journal = financeCommand.createJournal(memberPID, ledgerPID, journalCreateRequest);
+	
+	em.flush();
+	em.clear();
+	
+	Journal found1 = journalFinder.findJournal(ledgerFinder.findByLedger(ledgerPID), journal.journalId());
+	
+	EntryLine debitEntry1 = entryLineRepo.findById(found1.getEntryLine(EntrySide.DEBIT).getId()).get();
+	EntryLine creditEntry1 = entryLineRepo.findById(found1.getEntryLine(EntrySide.CREDIT).getId()).get();
+	
+	em.flush();
+	em.clear();
+	
+	JournalUpdateRequest journalUpdateRequest = new JournalUpdateRequest(
+			journal.journalId(),
+			LocalDate.of(2026, 5, 2),
+			50000L,
+			"Journal Memo2",
+			Map.of(
+					EntrySide.DEBIT, debitPID.publicId(),
+					EntrySide.CREDIT, credit2PID.publicId()
+			)
+	);
+	
+	JournalUpdateResponse updatedJournal = financeCommand.updateJournal(memberPID, ledgerPID, journalUpdateRequest);
+	
+	em.flush();
+	em.clear();
+	
+	Journal found2 = journalFinder.findJournal(ledgerFinder.findByLedger(ledgerPID), journal.journalId());
+	
+	assertThat(found2.getTransactionDate()).isEqualTo(LocalDate.of(2026, 5, 2));
+	assertThat(found2.getMemo()).isEqualTo("Journal Memo2");
+	assertThat(found2.getTransactionType()).isEqualTo(TransactionType.EXPENSE);
+	//assertThat(debitEntry1).isEqualTo(entryLineRepo.findById(found2.getEntryLine(EntrySide.DEBIT).getId()).get());
+	//assertThat(creditEntry1).isEqualTo(entryLineRepo.findById(found2.getEntryLine(EntrySide.CREDIT).getId()).get());
+	
+	assertThat(found2.getAccountName(EntrySide.CREDIT)).isEqualTo(creditCreateRequest2.accountName());
+	assertThat(found2.getAccountName(EntrySide.DEBIT)).isEqualTo(debitCreateRequest.accountName());
+}
+
+@Test
+@DisplayName("거래 내역 삭제")
+void deleteJournal() {
+	PublicId ledgerPID = createLedger(memberPID, ledgerCreateRequest);
+	
+	AccountCreateRequest debitCreateRequest = new AccountCreateRequest(
+			AccountType.EXPENSE,
+			"생활용품",
+			"Memo",
+			AccountOptionTemplate.VARIABLE_EXPENSE
+	);
+	
+	AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
+			AccountType.ASSET,
+			"체크카드",
+			"Memo",
+			AccountOptionTemplate.BANK_ACCOUNT
+	);
+	
+	PublicId debitPID = createAccount(memberPID, ledgerPID, debitCreateRequest);
+	PublicId creditPID = createAccount(memberPID, ledgerPID, creditCreateRequest);
+	
+	JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
+			LocalDate.of(2026, 5, 1),
+			55000L,
+			"Journal Memo",
+			TransactionType.EXPENSE,
+			Map.of(
+					EntrySide.DEBIT, debitPID.publicId(),
+					EntrySide.CREDIT, creditPID.publicId()
+			)
+	);
+	
+	JournalCreateResponse journal = financeCommand.createJournal(memberPID, ledgerPID, journalCreateRequest);
+	
+	em.flush();
+	em.clear();
+	
+	financeCommand.deleteJournal(memberPID, ledgerPID, journal.journalId());
+	
+	em.flush();
+	em.clear();
+	
+	assertThatThrownBy(() -> journalFinder.findJournal(
+			ledgerFinder.findByLedger(ledgerPID),
+			journal.journalId()))
+	.isInstanceOf(JournalException.class)
+	.hasMessageContaining(JournalErrorCode.JOURNAL_NOT_FOUND.getMessage())
+	;
+}
+
+private PublicId createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreateRequest) {
+	PublicId createdLedgerPID = new PublicId(financeCommand.createLedger(memberPublicId, ledgerCreateRequest).ledgerPublicId());
+	
+	em.flush();
+	em.clear();
+	
+	return createdLedgerPID;
+}
+
+private PublicId createAccount(PublicId memberPublicId, PublicId ledgerPublicId, AccountCreateRequest accountCreateRequest) {
+	AccountCreateResponse account = financeCommand.createAccount(memberPublicId, ledgerPublicId, accountCreateRequest);
+	
+	em.flush();
+	em.clear();
+	
+	return new PublicId(account.accountPublicId());
+}
+*/

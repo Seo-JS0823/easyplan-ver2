@@ -31,7 +31,7 @@ public class AccountOptionCache implements CommandLineRunner {
 		
 		optionMap.putAll(
 				accountOptionRepo.findAll().stream()
-						.collect(Collectors.toMap(AccountOption::getOption, AccountOption::getId))
+						.collect(Collectors.toMap(AccountOption::getOptionCode, AccountOption::getId))
 		);
 	}
 	

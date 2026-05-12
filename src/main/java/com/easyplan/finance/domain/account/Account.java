@@ -76,7 +76,7 @@ public class Account extends BaseEntity {
 	}
 	
 	public void changeInfo(String accountName, String accountDescription, AccountOption option) {
-		isActive();
+		validateActive();
 		
 		this.accountName = accountName;
 		this.accountDescription = accountDescription;
@@ -87,7 +87,7 @@ public class Account extends BaseEntity {
 		this.status = AccountStatus.DEACTIVATE;
 	}
 	
-	public void isActive() {
+	public void validateActive() {
 		if(this.status != AccountStatus.ACTIVE) {
 			throw new AccountException(AccountErrorCode.ACCOUNT_DEACTIVATE);
 		}

@@ -1,6 +1,7 @@
 package com.easyplan.finance.application.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.easyplan.finance.application.provided.JournalFinder;
 import com.easyplan.finance.application.required.JournalRepository;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class JournalFinderService implements JournalFinder {
 	
 	private final JournalRepository journalRepo;
@@ -20,6 +22,12 @@ public class JournalFinderService implements JournalFinder {
 	@Override
 	public Journal findJournal(Ledger ledger, Long id) {
 		return journalRepo.findByLedgerAndId(ledger, id)
+				.orElseThrow(() -> new JournalException(JournalErrorCode.JOURNAL_NOT_FOUND));
+	}
+
+	@Override
+	public Journal findWithDetail(Ledger ledger, Long id) {
+		return journalRepo.findByLedgerWithDetail(ledger, id)
 				.orElseThrow(() -> new JournalException(JournalErrorCode.JOURNAL_NOT_FOUND));
 	}
 

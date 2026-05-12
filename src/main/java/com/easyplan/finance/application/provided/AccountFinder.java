@@ -1,5 +1,6 @@
 package com.easyplan.finance.application.provided;
 
+import java.util.List;
 import java.util.Map;
 
 import com.easyplan._shared.domain.PublicId;
@@ -19,4 +20,6 @@ public interface AccountFinder {
 	 * 
 	 */
 	Map<EntrySide, Account> findAccountFromJournal(Ledger ledger, Map<EntrySide, String> entries);
+	
+	List<Account> findByLedger(Ledger ledger);
 }
