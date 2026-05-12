@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class TraceTimeAspect {
 	private static final Logger log = LoggerFactory.getLogger(TraceTimeAspect.class);
 	
-	@Around("@annotation(com.easyplan.finance.application.usecase.TraceTime)")
+	@Around("@annotation(com.easyplan._shared.annotation.TraceTime)")
 	public Object trace(ProceedingJoinPoint joinPoint) throws Throwable {
 		long start = System.nanoTime();
 		

@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.AccountFinder;
-import com.easyplan.finance.application.required.AccountRepository;
-import com.easyplan.finance.application.required.CategoryRepository;
+import com.easyplan.finance.application.required.repository.AccountRepository;
+import com.easyplan.finance.application.required.repository.CategoryRepository;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountStatus;

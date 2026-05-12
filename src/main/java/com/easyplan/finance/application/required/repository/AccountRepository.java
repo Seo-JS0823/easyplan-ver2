@@ -1,4 +1,4 @@
-package com.easyplan.finance.application.required;
+package com.easyplan.finance.application.required.repository;
 
 import java.util.List;
 import java.util.Optional;

@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.LedgerFinder;
-import com.easyplan.finance.application.required.LedgerRepository;
+import com.easyplan.finance.application.required.repository.LedgerRepository;
 import com.easyplan.finance.domain.ledger.Ledger;
 import com.easyplan.finance.domain.ledger.exception.LedgerErrorCode;
 import com.easyplan.finance.domain.ledger.exception.LedgerException;

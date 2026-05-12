@@ -2,7 +2,7 @@ package com.easyplan.finance.application.policy;
 
 import org.springframework.stereotype.Component;
 
-import com.easyplan.finance.application.required.AccountRepository;
+import com.easyplan.finance.application.required.repository.AccountRepository;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountType;
 import com.easyplan.finance.domain.account.Category;

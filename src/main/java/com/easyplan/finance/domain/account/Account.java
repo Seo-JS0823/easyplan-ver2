@@ -55,6 +55,10 @@ public class Account extends BaseEntity {
 	@Column(name = "account_description")
 	private String accountDescription;
 	
+	@Column(name = "account_type", nullable = false, updatable = false, length = 15)
+	@Enumerated(EnumType.STRING)
+	private AccountType accountType;
+	
 	@Column(name = "account_status", nullable = false, length = 10)
 	@Enumerated(EnumType.STRING)
 	private AccountStatus status;
@@ -71,6 +75,7 @@ public class Account extends BaseEntity {
 		
 		account.accountPublicId = PublicId.create();
 		account.status = AccountStatus.ACTIVE;
+		account.accountType = category.getAccountType();
 		
 		return account;
 	}
@@ -91,10 +96,6 @@ public class Account extends BaseEntity {
 		if(this.status != AccountStatus.ACTIVE) {
 			throw new AccountException(AccountErrorCode.ACCOUNT_DEACTIVATE);
 		}
-	}
-	
-	public AccountType getAccountType() {
-		return this.category.getAccountType();
 	}
 	
 }

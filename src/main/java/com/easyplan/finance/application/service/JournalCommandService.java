@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.easyplan.finance.application.provided.JournalCommand;
 import com.easyplan.finance.application.provided.JournalFinder;
-import com.easyplan.finance.application.required.EntryLineRepository;
-import com.easyplan.finance.application.required.JournalRepository;
+import com.easyplan.finance.application.required.repository.EntryLineRepository;
+import com.easyplan.finance.application.required.repository.JournalRepository;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.journal.EntryLine;

@@ -3,9 +3,12 @@ package com.easyplan.finance.application.usecase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.easyplan.finance.application.provided.AccountFinder;
-import com.easyplan.finance.application.provided.JournalFinder;
+import com.easyplan._shared.annotation.TraceTime;
+import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.LedgerFinder;
+import com.easyplan.finance.application.required.query.SummaryReader;
+import com.easyplan.finance.application.usecase.response.query.AssetSummary;
+import com.easyplan.finance.domain.ledger.Ledger;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,9 +18,13 @@ import lombok.RequiredArgsConstructor;
 public class FinanceQuery {
 	private final LedgerFinder ledgerFinder;
 	
-	private final AccountFinder accountFinder;
+	private final SummaryReader summaryReader;
 	
-	private final JournalFinder journalFinder;
-	
+	@TraceTime
+	public AssetSummary getNetWorthSummary(PublicId memberPublicId, PublicId ledgerPublicId) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+		
+		return summaryReader.currentAssetSummary(ledger.getId());
+	}
 	
 }

@@ -24,6 +24,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -33,7 +34,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "journal")
+@Table(
+		name = "journal",
+		indexes = {
+				@Index(
+						name = "idx_ledger_tdate_id",
+						columnList = "ledger_id, transaction_date, id"
+				)
+		}
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Journal extends BaseEntity {

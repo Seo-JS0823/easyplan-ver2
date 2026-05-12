@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.easyplan.finance.application.provided.JournalFinder;
-import com.easyplan.finance.application.required.JournalRepository;
+import com.easyplan.finance.application.required.repository.JournalRepository;
 import com.easyplan.finance.domain.journal.Journal;
 import com.easyplan.finance.domain.journal.exception.JournalErrorCode;
 import com.easyplan.finance.domain.journal.exception.JournalException;

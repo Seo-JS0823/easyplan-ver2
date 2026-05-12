@@ -1,4 +1,4 @@
-package com.easyplan.finance.application.usecase.response;
+package com.easyplan.finance.application.usecase.response.command;
 
 import com.easyplan.finance.domain.account.Account;
 

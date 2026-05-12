@@ -1,4 +1,4 @@
-package com.easyplan.finance.application.required;
+package com.easyplan.finance.application.required.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

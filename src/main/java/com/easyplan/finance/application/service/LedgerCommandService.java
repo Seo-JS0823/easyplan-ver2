@@ -6,7 +6,7 @@ import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.policy.LedgerPolicy;
 import com.easyplan.finance.application.provided.LedgerCommand;
 import com.easyplan.finance.application.provided.LedgerFinder;
-import com.easyplan.finance.application.required.LedgerRepository;
+import com.easyplan.finance.application.required.repository.LedgerRepository;
 import com.easyplan.finance.domain.ledger.Ledger;
 import com.easyplan.finance.domain.ledger.request.LedgerCreateRequest;
 import com.easyplan.finance.domain.ledger.request.LedgerUpdateRequest.LedgerFiscalUpdate;

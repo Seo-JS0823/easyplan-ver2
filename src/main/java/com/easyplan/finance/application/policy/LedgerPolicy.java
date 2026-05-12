@@ -2,7 +2,7 @@ package com.easyplan.finance.application.policy;
 
 import org.springframework.stereotype.Component;
 
-import com.easyplan.finance.application.required.LedgerRepository;
+import com.easyplan.finance.application.required.repository.LedgerRepository;
 import com.easyplan.finance.domain.ledger.exception.LedgerErrorCode;
 import com.easyplan.finance.domain.ledger.exception.LedgerException;
 

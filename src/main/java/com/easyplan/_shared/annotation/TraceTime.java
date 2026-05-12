@@ -1,4 +1,4 @@
-package com.easyplan.finance.application.usecase;
+package com.easyplan._shared.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

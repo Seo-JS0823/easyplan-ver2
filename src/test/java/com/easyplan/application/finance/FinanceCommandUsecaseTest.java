@@ -19,12 +19,11 @@ import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.provided.JournalFinder;
 import com.easyplan.finance.application.provided.LedgerFinder;
-import com.easyplan.finance.application.required.EntryLineRepository;
+import com.easyplan.finance.application.required.repository.EntryLineRepository;
 import com.easyplan.finance.application.usecase.FinanceCommand;
-import com.easyplan.finance.application.usecase.response.AccountResponse.AccountCreateResponse;
+import com.easyplan.finance.application.usecase.response.command.AccountResponse.AccountCreateResponse;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
-import com.easyplan.finance.domain.account.AccountBasicTemplate;
 import com.easyplan.finance.domain.account.AccountOptionTemplate;
 import com.easyplan.finance.domain.account.AccountStatus;
 import com.easyplan.finance.domain.account.AccountType;
@@ -104,12 +103,7 @@ public class FinanceCommandUsecaseTest {
 				LedgerType.PERSONAL,
 				"가계부 이름",
 				"가계부 설명",
-				List.of(
-						AccountBasicTemplate.ASS01,
-						AccountBasicTemplate.LIA01,
-						AccountBasicTemplate.INC01,
-						AccountBasicTemplate.EXP01
-				)
+				List.of()
 		);
 	}
 	
@@ -131,7 +125,7 @@ public class FinanceCommandUsecaseTest {
 		assertThat(ledger.getLedgerPublicId()).isNotNull();
 		assertThat(ledger.getLedgerPublicId().publicId().length()).isEqualTo(36);
 		
-		assertThat(account).hasSize(5);
+		assertThat(account).hasSize(1);
 		
 	}
 	
