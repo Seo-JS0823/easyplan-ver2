@@ -39,4 +39,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 					AND a.accountPublicId IN :accountPublicId
 	""")
 	List<Account> findByLedgerAndAccountPublicIdInWithCategory(Ledger ledger, List<PublicId> accountPublicId);
+
+	Optional<Account> findByLedgerAndCategory(Ledger ledger, Category category);
 }

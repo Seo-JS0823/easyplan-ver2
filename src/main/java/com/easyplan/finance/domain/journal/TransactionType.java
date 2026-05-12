@@ -32,6 +32,13 @@ public enum TransactionType {
 			return debit == AccountType.ASSET && credit == AccountType.ASSET;
 		}
 	},
+	BALANCE("기초잔액 설정") {
+		@Override
+		public boolean isValidPlacement(AccountType debit, AccountType credit) {
+			return (debit == AccountType.ASSET && credit == AccountType.EQUITY) ||
+					   (debit == AccountType.EQUITY && credit == AccountType.LIABILITIES);
+		}
+	}
 	
 	;
 	private final String description;
@@ -65,6 +72,14 @@ public enum TransactionType {
 				return String.format("[%s / 이체거래] %s 계좌에서 %s 계좌로 %s원이 이체되었습니다.",
 						journal.getTransactionDate().toString(),
 						credit.getAccountName(),
+						debit.getAccountName(),
+						MoneyFormatter.moneyFormat(journal.getAmount())
+				);
+			}
+			
+			case BALANCE : {
+				return String.format("[%s / 기초잔액 설정] %s 계좌에 %s원의 기초잔액이 설정되었습니다.",
+						journal.getTransactionDate().toString(),
 						debit.getAccountName(),
 						MoneyFormatter.moneyFormat(journal.getAmount())
 				);

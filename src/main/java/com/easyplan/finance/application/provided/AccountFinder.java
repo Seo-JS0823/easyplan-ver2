@@ -9,6 +9,8 @@ import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.ledger.Ledger;
 
 public interface AccountFinder {
+	Account findEquity(Ledger ledger);
+	
 	Account findAccount(Ledger ledger, PublicId accountPublicId);
 	
 	/**

@@ -11,9 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.required.AccountRepository;
+import com.easyplan.finance.application.required.CategoryRepository;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountStatus;
+import com.easyplan.finance.domain.account.AccountType;
+import com.easyplan.finance.domain.account.Category;
 import com.easyplan.finance.domain.account.exception.AccountErrorCode;
 import com.easyplan.finance.domain.account.exception.AccountException;
 import com.easyplan.finance.domain.ledger.Ledger;
@@ -26,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 public class AccountFinderService implements AccountFinder {
 
 	private final AccountRepository accountRepo;
+	
+	private final CategoryRepository categoryRepo;
 	
 	@Override
 	public Account findAccount(Ledger ledger, PublicId accountPublicId) {
@@ -75,5 +80,14 @@ public class AccountFinderService implements AccountFinder {
 	@Override
 	public List<Account> findByLedger(Ledger ledger) {
 		return accountRepo.findByLedger(ledger);
+	}
+
+	@Override
+	public Account findEquity(Ledger ledger) {
+		Category category = categoryRepo.findByLedgerAndAccountType(ledger, AccountType.EQUITY)
+				.orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+		
+		return accountRepo.findByLedgerAndCategory(ledger, category)
+				.orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
 	}
 }

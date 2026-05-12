@@ -22,6 +22,15 @@ public class FinanceFix {
 		);
 	}
 	
+	public static AccountCreateRequest assetAccountCreateRequest(String accountName) {
+		return new AccountCreateRequest(
+				AccountType.ASSET,
+				accountName,
+				"메모",
+				AccountOptionTemplate.BANK_ACCOUNT
+				);
+	}
+	
 	public static AccountCreateRequest expenseAccountCreateRequest() {
 		return new AccountCreateRequest(
 				AccountType.EXPENSE,
