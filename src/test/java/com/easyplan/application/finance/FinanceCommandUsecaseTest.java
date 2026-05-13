@@ -668,6 +668,8 @@ public class FinanceCommandUsecaseTest {
 		.hasMessageContaining(JournalErrorCode.JOURNAL_NOT_FOUND.getMessage());
 	}
 	
+	
+	
 	private Account createAccount(PublicId memberPID, Ledger ledger, AccountCreateRequest accountCreate) {
 		AccountCreateResponse response = financeCommand.createAccount(memberPID, ledger.getLedgerPublicId(), accountCreate);
 		

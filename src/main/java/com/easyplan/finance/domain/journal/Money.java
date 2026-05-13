@@ -1,8 +1,5 @@
 package com.easyplan.finance.domain.journal;
 
-import com.easyplan.finance.domain.journal.exception.JournalErrorCode;
-import com.easyplan.finance.domain.journal.exception.JournalException;
-
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -18,7 +15,7 @@ public class Money {
 	
 	public Money(Long amount) {
 		if(amount <= 0) {
-			throw new JournalException(JournalErrorCode.AMOUNT_ZERO_ERROR);
+			throw new IllegalArgumentException("금액은 0보다 커야합니다.");
 		}
 		
 		this.amount = amount;

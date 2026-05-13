@@ -1,5 +1,8 @@
 package com.easyplan.finance.domain.ledger;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+
 import com.easyplan._shared.domain.BaseEntity;
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.domain.ledger.exception.LedgerErrorCode;
@@ -74,11 +77,19 @@ public class Ledger extends BaseEntity {
 		this.fiscalDay = new FiscalDay(fiscalDay);
 	}
 	
+	public LocalDate fiscalStartDate(YearMonth month) {
+		return getFiscalDay().resolveStartDate(month);
+	}
+	
+	public LocalDate fiscalEndDate(YearMonth month) {
+		return getFiscalDay().resolveEndDate(month);
+	}
+	
 	/*
 	 * LedgerPolicyService가 하던 이 가계부 니꺼냐? 라는 DB IO 조회 로직 등이 포함된 동작을
 	 * 파라미터로 memberId 받고 비교하면 끝인걸 왜 어렵게했을까 ㅠㅠ
 	 * 
-	 * 원래 void 였는데 자기자긴 반환하게 해서 체이닝 형식으로 하면 더 좋을듯
+	 * 원래 void 였는데 자기자신 반환하게 해서 체이닝 형식으로 하면 더 좋을듯
 	 */
 	public Ledger validateOwner(Long memberId) {
 		if(!this.ledgerMemberId.equals(memberId)) {

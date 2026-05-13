@@ -60,7 +60,7 @@ public class FinanceFix {
 	
 	public static JournalCreateRequest journalCreate(TransactionType type, Account debit, Account credit) {
 		return new JournalCreateRequest(
-				LocalDate.of(2026, 5, 1),
+				LocalDate.of(2026, 4, 20),
 				100000L,
 				"거래 입력 테스트",
 				type,

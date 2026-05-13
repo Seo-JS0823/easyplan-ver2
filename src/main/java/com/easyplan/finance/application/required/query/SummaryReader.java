@@ -1,9 +1,9 @@
 package com.easyplan.finance.application.required.query;
 
-import java.time.YearMonth;
+import java.time.LocalDate;
 
-import com.easyplan.finance.application.usecase.response.query.AssetSummary;
-import com.easyplan.finance.application.usecase.response.query.MonthlyCashSummary;
+import com.easyplan.finance.application.usecase.response.query.LedgerAssetSummary;
+import com.easyplan.finance.application.usecase.response.query.MonthlyAssetSummary;
 
 public interface SummaryReader {
 	/*
@@ -15,7 +15,7 @@ public interface SummaryReader {
 	 *      - 반환 DTO    : MonthlyCashSummary
 	 */
 	
-	AssetSummary currentAssetSummary(Long ledgerId);
+	LedgerAssetSummary currentAssetSummary(Long ledgerId);
 	
-	MonthlyCashSummary monthlyCashSummary(Long ledgerId, YearMonth month);
+	MonthlyAssetSummary monthlyCashSummary(Long ledgerId, LocalDate startDate, LocalDate endDate);
 }

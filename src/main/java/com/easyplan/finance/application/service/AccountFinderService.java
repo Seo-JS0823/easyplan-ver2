@@ -43,6 +43,12 @@ public class AccountFinderService implements AccountFinder {
 		return accountRepo.findByLedgerAndAccountPublicIdAndStatus(ledger, accountPublicId, AccountStatus.ACTIVE)
 				.orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
 	}
+	
+	@Override
+	public Account findActiveAccountOwner(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId) {
+		return accountRepo.findActiveAccountByOwner(ownerId, ledgerPublicId, accountPublicId)
+				.orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+	}
 
 	@Override
 	public Map<EntrySide, Account> findAccountFromJournal(Ledger ledger, Map<EntrySide, String> entries) {

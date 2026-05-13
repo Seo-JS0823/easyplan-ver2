@@ -1,18 +1,19 @@
 package com.easyplan.finance.adapter.persistence;
 
-import java.time.YearMonth;
+import java.time.LocalDate;
 
 import org.springframework.stereotype.Repository;
 
 import com.easyplan._shared.annotation.TraceTime;
 import com.easyplan.finance.application.required.query.SummaryReader;
-import com.easyplan.finance.application.usecase.response.query.AssetSummary;
-import com.easyplan.finance.application.usecase.response.query.MonthlyCashSummary;
+import com.easyplan.finance.application.usecase.response.query.LedgerAssetSummary;
+import com.easyplan.finance.application.usecase.response.query.MonthlyAssetSummary;
 import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.domain.account.AccountType;
 import com.easyplan.finance.domain.account.QAccount;
 import com.easyplan.finance.domain.journal.QEntryLine;
 import com.easyplan.finance.domain.journal.QJournal;
+import com.easyplan.finance.domain.journal.TransactionType;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -28,7 +29,7 @@ public class SummaryReaderQueryDSL implements SummaryReader {
 	
 	@Override
 	@TraceTime
-	public AssetSummary currentAssetSummary(Long ledgerId) {
+	public LedgerAssetSummary currentAssetSummary(Long ledgerId) {
 		QJournal journal = QJournal.journal;
 		QEntryLine entry = QEntryLine.entryLine;
 		QAccount account = QAccount.account;
@@ -74,13 +75,43 @@ public class SummaryReaderQueryDSL implements SummaryReader {
 		
 		long netWorth = asset - liabilities;
 		
-		return new AssetSummary(asset, liabilities, netWorth);
+		return new LedgerAssetSummary(asset, liabilities, netWorth);
 	}
 
 	@Override
-	public MonthlyCashSummary monthlyCashSummary(Long ledgerId, YearMonth month) {
-		// TODO Auto-generated method stub
-		return null;
+	public MonthlyAssetSummary monthlyCashSummary(Long ledgerId, LocalDate startDate, LocalDate endDate) {
+		QJournal journal = QJournal.journal;
+		
+		NumberExpression<Long> monthlyTotalIncome = new CaseBuilder()
+				.when(journal.transactionType.eq(TransactionType.INCOME))
+				.then(journal.amount.amount)
+				.otherwise(0L)
+				.sum();
+		
+		NumberExpression<Long> monthlyTotalExpense = new CaseBuilder()
+				.when(journal.transactionType.eq(TransactionType.EXPENSE))
+				.then(journal.amount.amount)
+				.otherwise(0L)
+				.sum();
+		
+		Tuple result = qf
+				.select(monthlyTotalIncome, monthlyTotalExpense)
+				.from(journal)
+				.where(
+						journal.ledger.id.eq(ledgerId),
+						journal.transactionDate.between(startDate, endDate)
+				)
+				.fetchOne();
+		
+		long income = result == null || result.get(monthlyTotalIncome) == null
+				? 0L
+				: result.get(monthlyTotalIncome);
+		
+		long expense = result == null || result.get(monthlyTotalExpense) == null
+				? 0L
+				: result.get(monthlyTotalExpense);
+		
+		return new MonthlyAssetSummary(income, expense);
 	}
-
+	
 }

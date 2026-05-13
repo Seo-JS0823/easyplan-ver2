@@ -2,6 +2,7 @@ package com.easyplan.application.finance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.YearMonth;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,8 @@ import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.provided.LedgerFinder;
 import com.easyplan.finance.application.usecase.FinanceCommand;
 import com.easyplan.finance.application.usecase.FinanceQuery;
-import com.easyplan.finance.application.usecase.response.query.AssetSummary;
+import com.easyplan.finance.application.usecase.response.query.LedgerAssetSummary;
+import com.easyplan.finance.application.usecase.response.query.MonthlyAssetSummary;
 import com.easyplan.finance.domain.journal.TransactionType;
 import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateRequest;
 import com.easyplan.finance.domain.ledger.Ledger;
@@ -109,29 +111,21 @@ public class FinanceQueryTest {
 	@Test
 	@DisplayName("createJournalExpense Test")
 	void createJournalExpenseTest() {
-		for(int i = 0; i < 1000; i++) {
-			// amount: 100,000,000
+		for(int i = 0; i < 10; i++) {
+			// 1회 amount: 100,000 
 			createJournalIncome();
-		}
-		
-		for(int i = 0; i < 700; i++) {
-			// amount: 70,000,000
 			createJournalExpenseFromAsset();
-		}
-		
-		for(int i = 0; i < 100; i++) {
-			// amount: 10,000,000
 			createJournalExpenseFromLiabilities();
 		}
 		
 		em.flush();
 		em.clear();
 		
-		AssetSummary result = financeQuery.getNetWorthSummary(memberPID, ledgerPID);
+		LedgerAssetSummary result = financeQuery.getNetWorthSummary(memberPID, ledgerPID);
 		
-		assertThat(result.totalAsset()).isEqualTo(30000000L);
-		assertThat(result.totalLiabilities()).isEqualTo(10000000L);
-		assertThat(result.netWorth()).isEqualTo(20000000L);
+		assertThat(result.totalAsset()).isEqualTo(0L);
+		assertThat(result.totalLiabilities()).isEqualTo(1000000L);
+		assertThat(result.netWorth()).isEqualTo(-1000000L);
 		
 		System.out.println(result);
 		
@@ -139,11 +133,33 @@ public class FinanceQueryTest {
 		financeQuery.getNetWorthSummary(memberPID, ledgerPID);
 	}
 	
+	@Test
+	@DisplayName("monthlyCashSummary Test")
+	void monthlyCashSummary() {
+		for(int i = 0; i < 10; i++) {
+			// 1회 amount: 100,000
+			// transactionDate : 2026-04-20
+			createJournalIncome();									// 총 수입이 100만원
+			createJournalExpenseFromAsset();				// 자산계정의 소비 내역이 100만원
+			createJournalExpenseFromLiabilities();	// 부채계정의 소비 내역이 200만원
+		}
+		
+		em.flush();
+		em.clear();
+		
+		MonthlyAssetSummary result = financeQuery.getMonthlyCashSummary(memberPID, ledgerPID, YearMonth.of(2026, 4));
+		
+		assertThat(result.monthlyTotalExpense()).isEqualTo(2000000L);
+		assertThat(result.monthlyTotalIncome()).isEqualTo(1000000L);
+	}
+	
+	
+	
 	private void createJournalExpenseFromLiabilities() {
 		JournalCreateRequest request = FinanceFix.journalCreate(TransactionType.EXPENSE,
 				accountFinder.findAccount(ledger, expPID),
 				accountFinder.findAccount(ledger, liaPID)
-				);
+		);
 		
 		financeCommand.createJournal(memberPID, ledgerPID, request);
 	}

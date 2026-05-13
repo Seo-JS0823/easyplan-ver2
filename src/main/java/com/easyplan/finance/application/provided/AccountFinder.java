@@ -24,4 +24,6 @@ public interface AccountFinder {
 	Map<EntrySide, Account> findAccountFromJournal(Ledger ledger, Map<EntrySide, String> entries);
 	
 	List<Account> findByLedger(Ledger ledger);
+	
+	Account findActiveAccountOwner(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId);
 }

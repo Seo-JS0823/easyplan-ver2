@@ -1,4 +1,4 @@
-package com.easyplan.member.domain.converter;
+package com.easyplan._global.persistence;
 
 import com.easyplan.member.domain.TimeZoneId;
 

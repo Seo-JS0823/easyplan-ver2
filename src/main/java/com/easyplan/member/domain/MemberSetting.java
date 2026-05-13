@@ -1,7 +1,7 @@
 package com.easyplan.member.domain;
 
+import com.easyplan._global.persistence.TimeZoneIdConverter;
 import com.easyplan._shared.domain.BaseEntity;
-import com.easyplan.member.domain.converter.TimeZoneIdConverter;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;

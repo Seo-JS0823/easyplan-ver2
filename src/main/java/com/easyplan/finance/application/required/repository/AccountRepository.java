@@ -41,4 +41,15 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 	List<Account> findByLedgerAndAccountPublicIdInWithCategory(Ledger ledger, List<PublicId> accountPublicId);
 
 	Optional<Account> findByLedgerAndCategory(Ledger ledger, Category category);
+	
+	@Query("""
+			SELECT a FROM Account a
+			JOIN FETCH a.ledger l
+			where
+					l.ownerId = :ownerId
+					AND l.ledgerPublicId = :ledgerPublicId
+					AND a.accountPublicId = :accountPublicId
+					AND a.status = 'ACTIVE'
+	""")
+	Optional<Account> findActiveAccountByOwner(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId);
 }
