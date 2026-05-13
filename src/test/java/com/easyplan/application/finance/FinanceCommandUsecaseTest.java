@@ -99,12 +99,7 @@ public class FinanceCommandUsecaseTest {
 		em.flush();
 		em.clear();
 		
-		ledgerCreateRequest = new LedgerCreateRequest(
-				LedgerType.PERSONAL,
-				"가계부 이름",
-				"가계부 설명",
-				List.of()
-		);
+		ledgerCreateRequest = FinanceFix.ledgerCreateRequest();
 	}
 	
 	// 가계부 생성 테스트

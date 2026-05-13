@@ -1,6 +1,7 @@
 package com.easyplan.application.finance;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import com.easyplan.finance.domain.EntrySide;
@@ -10,8 +11,19 @@ import com.easyplan.finance.domain.account.AccountType;
 import com.easyplan.finance.domain.account.request.AccountRequest.AccountCreateRequest;
 import com.easyplan.finance.domain.journal.TransactionType;
 import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateRequest;
+import com.easyplan.finance.domain.ledger.LedgerType;
+import com.easyplan.finance.domain.ledger.request.LedgerCreateRequest;
 
 public class FinanceFix {
+	
+	public static LedgerCreateRequest ledgerCreateRequest() {
+		return new LedgerCreateRequest(
+				LedgerType.PERSONAL,
+				"가계부 이름",
+				"가계부 설명",
+				List.of()
+		);
+	}
 	
 	public static AccountCreateRequest assetAccountCreateRequest() {
 		return new AccountCreateRequest(
