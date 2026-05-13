@@ -7,11 +7,11 @@ import com.easyplan.finance.domain.ledger.request.LedgerUpdateRequest.LedgerFisc
 import com.easyplan.finance.domain.ledger.request.LedgerUpdateRequest.LedgerInfoUpdate;
 
 public interface LedgerCommand {
-	Ledger createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreate);
+	Ledger createLedger(Long memberId, LedgerCreateRequest ledgerCreate);
 	
-	Ledger updateInfo(PublicId memberPublicId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo);
+	Ledger updateInfo(Long memberId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo);
 	
-	Ledger updateFiscal(PublicId memberPublicId, PublicId ledgerPublicId, LedgerFiscalUpdate ledgerFiscal);
+	Ledger updateFiscal(Long memberId, PublicId ledgerPublicId, LedgerFiscalUpdate ledgerFiscal);
 	
-	void delete(PublicId memberPublicId, PublicId ledgerPublicId);
+	void delete(Long memberId, PublicId ledgerPublicId);
 }

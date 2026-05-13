@@ -29,9 +29,9 @@ public class LedgerCommandService implements LedgerCommand {
 	private final LedgerPolicy ledgerPolicy;
 	
 	@Override
-	public Ledger createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreate) {
+	public Ledger createLedger(Long memberId, LedgerCreateRequest ledgerCreate) {
 		// 서비스 사용 가능한 멤버 조회
-		MemberSummary member = memberFinder.findActiveMember(memberPublicId);
+		MemberSummary member = memberFinder.findActiveMember(memberId);
 		
 		// 보유한 가계부 중 동일한 이름이 있는지 검사
 		ledgerPolicy.validateLedgerName(member.getId(), ledgerCreate.name());
@@ -44,9 +44,9 @@ public class LedgerCommandService implements LedgerCommand {
 	}
 
 	@Override
-	public Ledger updateInfo(PublicId memberPublicId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo) {
+	public Ledger updateInfo(Long memberId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo) {
 		// 서비스 사용 가능한 멤버 조회
-		MemberSummary member = memberFinder.findActiveMember(memberPublicId);
+		MemberSummary member = memberFinder.findActiveMember(memberId);
 		
 		// 가계부 조회
 		Ledger ledger = ledgerFinder.findByLedger(ledgerPublicId);
@@ -64,9 +64,9 @@ public class LedgerCommandService implements LedgerCommand {
 	}
 
 	@Override
-	public Ledger updateFiscal(PublicId memberPublicId, PublicId ledgerPublicId, LedgerFiscalUpdate ledgerFiscal) {
+	public Ledger updateFiscal(Long memberId, PublicId ledgerPublicId, LedgerFiscalUpdate ledgerFiscal) {
 		// 서비스 사용 가능한 멤버 조회
-		MemberSummary member = memberFinder.findActiveMember(memberPublicId);
+		MemberSummary member = memberFinder.findActiveMember(memberId);
 		
 		// 가계부 조회
 		Ledger ledger = ledgerFinder.findByLedger(ledgerPublicId);
@@ -81,8 +81,8 @@ public class LedgerCommandService implements LedgerCommand {
 	}
 
 	@Override
-	public void delete(PublicId memberPublicId, PublicId ledgerPublicId) {
-		MemberSummary member = memberFinder.findActiveMember(memberPublicId);
+	public void delete(Long memberId, PublicId ledgerPublicId) {
+		MemberSummary member = memberFinder.findActiveMember(memberId);
 		
 		Ledger ledger = ledgerFinder.findByLedger(ledgerPublicId);
 		

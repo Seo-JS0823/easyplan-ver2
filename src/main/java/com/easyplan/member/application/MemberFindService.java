@@ -81,6 +81,15 @@ public class MemberFindService implements MemberFinder {
 	}
 
 	@Override
+	public MemberSummary findActiveMember(Long memberId) {
+		MemberSummary member = new MemberSummaryImpl(findById(memberId));
+		
+		memberPolicy.canUseService(member);
+		
+		return member;
+	}
+	
+	@Override
 	public MemberSummary findActiveMember(PublicId memberPublicId) {
 		MemberSummary member = findByPublicIdSummary(memberPublicId);
 		

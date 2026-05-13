@@ -29,8 +29,8 @@ public class LedgerFinderService implements LedgerFinder {
 	}
 
 	@Override
-	public Ledger findByLedgerOwner(PublicId memberPublicId, PublicId ledgerPublicId) {
-		MemberSummary member = memberFinder.findActiveMember(memberPublicId);
+	public Ledger findByLedgerOwner(Long memberId, PublicId ledgerPublicId) {
+		MemberSummary member = memberFinder.findActiveMember(memberId);
 		
 		Ledger ledger = ledgerRepo.findByLedgerPublicId(ledgerPublicId)
 				.orElseThrow(() -> new LedgerException(LedgerErrorCode.LEDGER_NOT_FOUND));

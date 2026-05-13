@@ -107,7 +107,7 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("가계부 생성")
 	void createLedger() {
 		// 준비 및 실행
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		List<Account> account = accountFinder.findByLedger(ledger);
 		
 		// 결과
@@ -129,7 +129,7 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("가계부 정보 수정")
 	void updateLedgerInfo() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		
 		LedgerInfoUpdate ledgerInfoUpdate = new LedgerInfoUpdate(
 				"가계부 이름 update",
@@ -137,7 +137,7 @@ public class FinanceCommandUsecaseTest {
 		);
 		
 		// 실행
-		financeCommand.updateLedgerInfo(memberPID, ledger.getLedgerPublicId(), ledgerInfoUpdate);
+		financeCommand.updateLedgerInfo(member.getId(), ledger.getLedgerPublicId(), ledgerInfoUpdate);
 		
 		em.flush();
 		em.clear();
@@ -156,12 +156,12 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("가계부 회계 시작일 수정")
 	void updateLedgerFiscal() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		
 		LedgerFiscalUpdate ledgerFiscalUpdate = new LedgerFiscalUpdate(10);
 		
 		// 실행
-		financeCommand.updateLedgerFiscal(memberPID, ledger.getLedgerPublicId(), ledgerFiscalUpdate);
+		financeCommand.updateLedgerFiscal(member.getId(), ledger.getLedgerPublicId(), ledgerFiscalUpdate);
 		
 		em.flush();
 		em.clear();
@@ -180,10 +180,10 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("가계부 삭제")
 	void deleteLedger() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		
 		// 실행
-		financeCommand.deleteLedger(memberPID, ledger.getLedgerPublicId());
+		financeCommand.deleteLedger(member.getId(), ledger.getLedgerPublicId());
 		
 		em.flush();
 		em.clear();
@@ -199,7 +199,7 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("거래 계정 생성")
 	void createAccount() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
 		AccountCreateRequest expenseReq = FinanceFix.expenseAccountCreateRequest();
@@ -207,10 +207,10 @@ public class FinanceCommandUsecaseTest {
 		AccountCreateRequest liaReq = FinanceFix.liabilitiesAccountCreateRequest();
 		
 		// 실행
-		Account asset = createAccount(memberPID, ledger, assetReq);
-		Account expense = createAccount(memberPID, ledger, expenseReq);
-		Account income = createAccount(memberPID, ledger, incomeReq);
-		Account lia = createAccount(memberPID, ledger, liaReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
+		Account expense = createAccount(member.getId(), ledger, expenseReq);
+		Account income = createAccount(member.getId(), ledger, incomeReq);
+		Account lia = createAccount(member.getId(), ledger, liaReq);
 		
 		Account assetFound = accountFinder.findAccount(ledger, asset.getAccountPublicId());
 		Account expenseFound = accountFinder.findAccount(ledger, expense.getAccountPublicId());
@@ -259,9 +259,9 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("계정 정보 수정")
 	void updateAccount() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
-		Account asset = createAccount(memberPID, ledger, assetReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
 		
 		AccountUpdateRequest assetUpdateReq = new AccountUpdateRequest(
 				"AccountName",
@@ -270,7 +270,7 @@ public class FinanceCommandUsecaseTest {
 		);
 		
 		// 실행
-		financeCommand.updateAccount(memberPID, ledger.getLedgerPublicId(), asset.getAccountPublicId(), assetUpdateReq);
+		financeCommand.updateAccount(member.getId(), ledger.getLedgerPublicId(), asset.getAccountPublicId(), assetUpdateReq);
 		
 		em.flush();
 		em.clear();
@@ -292,12 +292,12 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("계정 삭제")
 	void deactivateAccount() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
-		Account asset = createAccount(memberPID, ledger, assetReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
 		
 		// 실행
-		financeCommand.deactivateAccount(memberPID, ledger.getLedgerPublicId(), asset.getAccountPublicId());
+		financeCommand.deactivateAccount(member.getId(), ledger.getLedgerPublicId(), asset.getAccountPublicId());
 		
 		em.flush();
 		em.clear();
@@ -318,11 +318,11 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("거래 입력 수입 거래")
 	void createJournalIncome() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
 		AccountCreateRequest incomeReq = FinanceFix.incomeAccountCreateRequest();		
-		Account asset = createAccount(memberPID, ledger, assetReq);
-		Account income = createAccount(memberPID, ledger, incomeReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
+		Account income = createAccount(member.getId(), ledger, incomeReq);
 		
 		JournalCreateRequest incomeJournalCreate = FinanceFix.journalCreate(
 				TransactionType.INCOME,
@@ -333,7 +333,7 @@ public class FinanceCommandUsecaseTest {
 		Money money = new Money(incomeJournalCreate.amount());
 		
 		// 실행
-		Long journalId = financeCommand.createJournal(memberPID, ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
+		Long journalId = financeCommand.createJournal(member.getId(), ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
 		
 		em.flush();
 		em.clear();
@@ -370,11 +370,11 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("거래 입력 지출 거래")
 	void createJournalExpense() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
 		AccountCreateRequest expenseReq = FinanceFix.expenseAccountCreateRequest();		
-		Account asset = createAccount(memberPID, ledger, assetReq);
-		Account expense = createAccount(memberPID, ledger, expenseReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
+		Account expense = createAccount(member.getId(), ledger, expenseReq);
 		
 		JournalCreateRequest incomeJournalCreate = FinanceFix.journalCreate(
 				TransactionType.EXPENSE,
@@ -385,7 +385,7 @@ public class FinanceCommandUsecaseTest {
 		Money money = new Money(incomeJournalCreate.amount());
 		
 		// 실행
-		Long journalId = financeCommand.createJournal(memberPID, ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
+		Long journalId = financeCommand.createJournal(member.getId(), ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
 		
 		em.flush();
 		em.clear();
@@ -420,11 +420,11 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("거래 입력 이체 거래")
 	void createJournalTransfer() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest debitAssetReq = FinanceFix.assetAccountCreateRequest("debit account");
 		AccountCreateRequest creditAssetReq = FinanceFix.assetAccountCreateRequest("credit account");		
-		Account debit = createAccount(memberPID, ledger, debitAssetReq);
-		Account credit = createAccount(memberPID, ledger, creditAssetReq);
+		Account debit = createAccount(member.getId(), ledger, debitAssetReq);
+		Account credit = createAccount(member.getId(), ledger, creditAssetReq);
 		
 		JournalCreateRequest incomeJournalCreate = FinanceFix.journalCreate(
 				TransactionType.TRANSFER,
@@ -435,7 +435,7 @@ public class FinanceCommandUsecaseTest {
 		Money money = new Money(incomeJournalCreate.amount());
 		
 		// 실행
-		Long journalId = financeCommand.createJournal(memberPID, ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
+		Long journalId = financeCommand.createJournal(member.getId(), ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
 		
 		em.flush();
 		em.clear();
@@ -470,9 +470,9 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("기초잔액 설정 자산계정")
 	void balanceSettingAsset() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
-		Account asset = createAccount(memberPID, ledger, assetReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
 		Account equity = accountFinder.findEquity(ledger);
 		
 		JournalCreateRequest balanceSettingRequest = FinanceFix.journalCreate(
@@ -484,7 +484,7 @@ public class FinanceCommandUsecaseTest {
 		Money money = new Money(balanceSettingRequest.amount());
 		
 		// 실행
-		Long journalId = financeCommand.createJournal(memberPID, ledger.getLedgerPublicId(), balanceSettingRequest).journalId();
+		Long journalId = financeCommand.createJournal(member.getId(), ledger.getLedgerPublicId(), balanceSettingRequest).journalId();
 		
 		em.flush();
 		em.clear();
@@ -519,9 +519,9 @@ public class FinanceCommandUsecaseTest {
 	@DisplayName("기초잔액 설정 부채계정")
 	void balanceSettingLiabilities() {
 		// 준비
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest liaReq = FinanceFix.liabilitiesAccountCreateRequest();
-		Account lia = createAccount(memberPID, ledger, liaReq);
+		Account lia = createAccount(member.getId(), ledger, liaReq);
 		Account equity = accountFinder.findEquity(ledger);
 		
 		JournalCreateRequest balanceSettingRequest = FinanceFix.journalCreate(
@@ -533,7 +533,7 @@ public class FinanceCommandUsecaseTest {
 		Money money = new Money(balanceSettingRequest.amount());
 		
 		// 실행
-		Long journalId = financeCommand.createJournal(memberPID, ledger.getLedgerPublicId(), balanceSettingRequest).journalId();
+		Long journalId = financeCommand.createJournal(member.getId(), ledger.getLedgerPublicId(), balanceSettingRequest).journalId();
 		
 		em.flush();
 		em.clear();
@@ -568,11 +568,11 @@ public class FinanceCommandUsecaseTest {
 	@Test
 	@DisplayName("거래 내역 수정")
 	void updateJournal() {
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
 		AccountCreateRequest expenseReq = FinanceFix.expenseAccountCreateRequest();		
-		Account asset = createAccount(memberPID, ledger, assetReq);
-		Account expense = createAccount(memberPID, ledger, expenseReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
+		Account expense = createAccount(member.getId(), ledger, expenseReq);
 		
 		JournalCreateRequest incomeJournalCreate = FinanceFix.journalCreate(
 				TransactionType.EXPENSE,
@@ -580,7 +580,7 @@ public class FinanceCommandUsecaseTest {
 				asset
 		);
 		
-		Long journalId = financeCommand.createJournal(memberPID, ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
+		Long journalId = financeCommand.createJournal(member.getId(), ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
 		
 		em.flush();
 		em.clear();
@@ -599,7 +599,7 @@ public class FinanceCommandUsecaseTest {
 		Money money = new Money(journalUpdateRequest.amount());
 		
 		// 실행
-		financeCommand.updateJournal(memberPID, ledger.getLedgerPublicId(), journalUpdateRequest);
+		financeCommand.updateJournal(member.getId(), ledger.getLedgerPublicId(), journalUpdateRequest);
 		
 		em.flush();
 		em.clear();
@@ -634,11 +634,11 @@ public class FinanceCommandUsecaseTest {
 	@Test
 	@DisplayName("거래 내역 삭제")
 	void deleteJournal() {
-		Ledger ledger = createLedger(memberPID);
+		Ledger ledger = createLedger(member.getId());
 		AccountCreateRequest assetReq = FinanceFix.assetAccountCreateRequest();
 		AccountCreateRequest incomeReq = FinanceFix.incomeAccountCreateRequest();		
-		Account asset = createAccount(memberPID, ledger, assetReq);
-		Account income = createAccount(memberPID, ledger, incomeReq);
+		Account asset = createAccount(member.getId(), ledger, assetReq);
+		Account income = createAccount(member.getId(), ledger, incomeReq);
 		
 		JournalCreateRequest incomeJournalCreate = FinanceFix.journalCreate(
 				TransactionType.INCOME,
@@ -646,13 +646,13 @@ public class FinanceCommandUsecaseTest {
 				income
 		);
 		
-		Long journalId = financeCommand.createJournal(memberPID, ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
+		Long journalId = financeCommand.createJournal(member.getId(), ledger.getLedgerPublicId(), incomeJournalCreate).journalId();
 		
 		em.flush();
 		em.clear();
 		
 		// 실행
-		financeCommand.deleteJournal(memberPID, ledger.getLedgerPublicId(), journalId);
+		financeCommand.deleteJournal(member.getId(), ledger.getLedgerPublicId(), journalId);
 		
 		em.flush();
 		em.clear();
@@ -665,8 +665,8 @@ public class FinanceCommandUsecaseTest {
 	
 	
 	
-	private Account createAccount(PublicId memberPID, Ledger ledger, AccountCreateRequest accountCreate) {
-		AccountCreateResponse response = financeCommand.createAccount(memberPID, ledger.getLedgerPublicId(), accountCreate);
+	private Account createAccount(Long memberId, Ledger ledger, AccountCreateRequest accountCreate) {
+		AccountCreateResponse response = financeCommand.createAccount(memberId, ledger.getLedgerPublicId(), accountCreate);
 		
 		em.flush();
 		em.clear();
@@ -678,13 +678,13 @@ public class FinanceCommandUsecaseTest {
 		return account;
 	}
 	
-	private Ledger createLedger(PublicId memberPID) {
-		PublicId ledgerPID = new PublicId(financeCommand.createLedger(memberPID, ledgerCreateRequest).ledgerPublicId());
+	private Ledger createLedger(Long memberId) {
+		PublicId ledgerPID = new PublicId(financeCommand.createLedger(memberId, ledgerCreateRequest).ledgerPublicId());
 		
 		em.flush();
 		em.clear();
 		
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPID, ledgerPID);
+		Ledger ledger = ledgerFinder.findByLedgerOwner(memberId, ledgerPID);
 		
 		return ledger;
 	}

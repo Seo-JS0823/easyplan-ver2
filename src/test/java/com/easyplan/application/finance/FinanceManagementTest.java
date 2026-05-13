@@ -75,12 +75,12 @@ public class FinanceManagementTest {
 		
 		em.flush();
 		
-		ledgerPID = new PublicId(financeCommand.createLedger(memberPID, FinanceFix.ledgerCreateRequest()).ledgerPublicId());
+		ledgerPID = new PublicId(financeCommand.createLedger(memberId, FinanceFix.ledgerCreateRequest()).ledgerPublicId());
 		
-		assPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.assetAccountCreateRequest()).accountPublicId());
-		incPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.incomeAccountCreateRequest()).accountPublicId());
-		expPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.expenseAccountCreateRequest()).accountPublicId());
-		liaPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.liabilitiesAccountCreateRequest()).accountPublicId());
+		assPID = new PublicId(financeCommand.createAccount(memberId, ledgerPID, FinanceFix.assetAccountCreateRequest()).accountPublicId());
+		incPID = new PublicId(financeCommand.createAccount(memberId, ledgerPID, FinanceFix.incomeAccountCreateRequest()).accountPublicId());
+		expPID = new PublicId(financeCommand.createAccount(memberId, ledgerPID, FinanceFix.expenseAccountCreateRequest()).accountPublicId());
+		liaPID = new PublicId(financeCommand.createAccount(memberId, ledgerPID, FinanceFix.liabilitiesAccountCreateRequest()).accountPublicId());
 		
 		em.clear();
 	}

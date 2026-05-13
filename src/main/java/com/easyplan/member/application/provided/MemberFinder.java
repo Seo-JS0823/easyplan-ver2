@@ -12,6 +12,7 @@ public interface MemberFinder {
 	
 	// 외부 도메인에서 서비스 사용 가능한 멤버를 조회해야할 때 사용
 	MemberSummary findActiveMember(PublicId memberPublicId);
+	MemberSummary findActiveMember(Long memberId);
 	
 	MemberSummary findByPublicIdSummary(PublicId memberPublicId);
 	

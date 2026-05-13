@@ -54,9 +54,9 @@ public class FinanceCommand {
 	
 	// 가계부 생성
 	@TraceTime
-	public LedgerCreateResponse createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreate) {
+	public LedgerCreateResponse createLedger(Long ownerId, LedgerCreateRequest ledgerCreate) {
 		// 가계부 생성
-		Ledger ledger = ledgerCommand.createLedger(memberPublicId, ledgerCreate);
+		Ledger ledger = ledgerCommand.createLedger(ownerId, ledgerCreate);
 		
 		// 위 가계부와 연결된 기본 5대 카테고리(대분류) 생성
 		List<Category> categories = accountCommand.createCategories(ledger);
@@ -69,30 +69,30 @@ public class FinanceCommand {
 	
 	// 가계부 정보 수정
 	@TraceTime
-	public LedgerInfoUpdateResponse updateLedgerInfo(PublicId memberPublicId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo) {
-		Ledger ledger = ledgerCommand.updateInfo(memberPublicId, ledgerPublicId, ledgerInfo);
+	public LedgerInfoUpdateResponse updateLedgerInfo(Long ownerId, PublicId ledgerPublicId, LedgerInfoUpdate ledgerInfo) {
+		Ledger ledger = ledgerCommand.updateInfo(ownerId, ledgerPublicId, ledgerInfo);
 		
 		return LedgerInfoUpdateResponse.of(ledger);
 	}
 	
 	// 가계부 회계 시작일 수정
 	@TraceTime
-	public LedgerFiscalUpdateResponse updateLedgerFiscal(PublicId memberPublicId, PublicId ledgerPublicId, LedgerFiscalUpdate ledgerFiscal) {
-		Ledger ledger = ledgerCommand.updateFiscal(memberPublicId, ledgerPublicId, ledgerFiscal);
+	public LedgerFiscalUpdateResponse updateLedgerFiscal(Long ownerId, PublicId ledgerPublicId, LedgerFiscalUpdate ledgerFiscal) {
+		Ledger ledger = ledgerCommand.updateFiscal(ownerId, ledgerPublicId, ledgerFiscal);
 		
 		return LedgerFiscalUpdateResponse.of(ledger);
 	}
 	
 	// 가계부 삭제
 	@TraceTime
-	public void deleteLedger(PublicId memberPublicId, PublicId ledgerPublicId) {
-		ledgerCommand.delete(memberPublicId, ledgerPublicId);
+	public void deleteLedger(Long ownerId, PublicId ledgerPublicId) {
+		ledgerCommand.delete(ownerId, ledgerPublicId);
 	}
 	
 	// 계정 항목 생성
 	@TraceTime
-	public AccountCreateResponse createAccount(PublicId memberPublicId, PublicId ledgerPublicId, AccountCreateRequest accountCreate) {
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+	public AccountCreateResponse createAccount(Long ownerId, PublicId ledgerPublicId, AccountCreateRequest accountCreate) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		Account account = accountCommand.createAccount(ledger, accountCreate);
 		
@@ -101,8 +101,8 @@ public class FinanceCommand {
 	
 	// 계정 항목 정보 변경
 	@TraceTime
-	public AccountUpdateResponse updateAccount(PublicId memberPublicId, PublicId ledgerPublicId, PublicId accountPublicId, AccountUpdateRequest accountUpdate) {
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+	public AccountUpdateResponse updateAccount(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId, AccountUpdateRequest accountUpdate) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		Account account = accountCommand.updateAccount(ledger, accountPublicId, accountUpdate);
 		
@@ -111,18 +111,18 @@ public class FinanceCommand {
 	
 	// 계정 항목 삭제
 	@TraceTime
-	public void deactivateAccount(PublicId memberPublicId, PublicId ledgerPublicId, PublicId accountPublicId)	{
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+	public void deactivateAccount(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId)	{
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		accountCommand.deactivate(ledger, accountPublicId);
 	}
 	
 	// 거래 입력
 	@TraceTime
-	public JournalCreateResponse createJournal(PublicId memberPublicId, PublicId ledgerPublicId, JournalCreateRequest journalCreate) {
+	public JournalCreateResponse createJournal(Long ownerId, PublicId ledgerPublicId, JournalCreateRequest journalCreate) {
 		validateJournalRequest(journalCreate.entries());
 		
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		Map<EntrySide, Account> accountMap = accountFinder.findAccountFromJournal(ledger, journalCreate.entries());
 		
@@ -133,10 +133,10 @@ public class FinanceCommand {
 	
 	// 거래 내역 수정
 	@TraceTime
-	public JournalUpdateResponse updateJournal(PublicId memberPublicId, PublicId ledgerPublicId, JournalUpdateRequest journalUpdate) {
+	public JournalUpdateResponse updateJournal(Long ownerId, PublicId ledgerPublicId, JournalUpdateRequest journalUpdate) {
 		validateJournalRequest(journalUpdate.entries());
 		
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		Map<EntrySide, Account> accountMap = accountFinder.findAccountFromJournal(ledger, journalUpdate.entries());
 		
@@ -147,8 +147,8 @@ public class FinanceCommand {
 	
 	// 거래 내역 삭제
 	@TraceTime
-	public void deleteJournal(PublicId memberPublicId, PublicId ledgerPublicId, Long journalId) {
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+	public void deleteJournal(Long ownerId, PublicId ledgerPublicId, Long journalId) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		journalCommand.deleteJournal(ledger, journalId);
 	}

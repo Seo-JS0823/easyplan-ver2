@@ -67,6 +67,7 @@ public class FinanceCommandUsecaseFailTest {
 	private EntityManager em;
 	
 	Member member1;
+	
 	Member member2;
 	
 	PublicId member1PID;
@@ -130,7 +131,7 @@ public class FinanceCommandUsecaseFailTest {
 		em.flush();
 		em.clear();
 		
-		assertThatThrownBy(() -> financeCommand.createLedger(member1PID, ledgerCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createLedger(member1.getId(), ledgerCreateRequest))
 		.isInstanceOf(MemberException.class)
 		.hasMessageContaining(MemberExceptionCode.MEMBER_CANNOT_USE_SERVICE.getMessage());
 	}
@@ -138,12 +139,12 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("가계부 생성 실패_동일 이름의 가계부 존재")
 	void createLedger_DuplicateLedgerName() {
-		financeCommand.createLedger(member1PID, ledgerCreateRequest);
+		financeCommand.createLedger(member1.getId(), ledgerCreateRequest);
 		
 		em.flush();
 		em.clear();
 		
-		assertThatThrownBy(() -> financeCommand.createLedger(member1PID, ledgerCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createLedger(member1.getId(), ledgerCreateRequest))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NAME_DUPLICATE.getMessage());
 	}
@@ -151,14 +152,14 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("가계부 정보 수정 실패_내 소유가 아닌 가계부")
 	void updateLedgerInfo_NotOwner() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
-		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2.getId(), ledgerCreateRequest);
 		
-		assertThatThrownBy(() -> financeCommand.updateLedgerInfo(member1PID, createdLedgerPIDMember2, ledgerInfoUpdate))
+		assertThatThrownBy(() -> financeCommand.updateLedgerInfo(member1.getId(), createdLedgerPIDMember2, ledgerInfoUpdate))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 		
-		assertThatThrownBy(() -> financeCommand.updateLedgerInfo(member2PID, createdLedgerPIDMember1, ledgerInfoUpdate))
+		assertThatThrownBy(() -> financeCommand.updateLedgerInfo(member2.getId(), createdLedgerPIDMember1, ledgerInfoUpdate))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 	}
@@ -166,12 +167,12 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("가계부 정보 수정 실패_동일 이름의 가계부 존재")
 	void updateLedgerInfo_DuplicateLedgerName() {
-		PublicId createdLedgerPIDLedger1 = createLedger(member1PID, ledgerCreateRequest);
-		createLedger(member1PID, ledgerCreateRequest2);
+		PublicId createdLedgerPIDLedger1 = createLedger(member1.getId(), ledgerCreateRequest);
+		createLedger(member1.getId(), ledgerCreateRequest2);
 		
 		LedgerInfoUpdate failLedgerInfo = new LedgerInfoUpdate(ledgerCreateRequest2.name(), ledgerCreateRequest2.description());
 		
-		assertThatThrownBy(() -> financeCommand.updateLedgerInfo(member1PID, createdLedgerPIDLedger1, failLedgerInfo))
+		assertThatThrownBy(() -> financeCommand.updateLedgerInfo(member1.getId(), createdLedgerPIDLedger1, failLedgerInfo))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NAME_DUPLICATE.getMessage());
 	}
@@ -179,11 +180,11 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("가계부 회계 시작일 수정 실패_지원하지 않는 날짜")
 	void updateLedgerFiscal_DayError() {
-		PublicId createdLedgerPIDLedger1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDLedger1 = createLedger(member1.getId(), ledgerCreateRequest);
 		
 		LedgerFiscalUpdate failFiscalUpdate = new LedgerFiscalUpdate(32);
 		
-		assertThatThrownBy(() -> financeCommand.updateLedgerFiscal(member1PID, createdLedgerPIDLedger1, failFiscalUpdate))
+		assertThatThrownBy(() -> financeCommand.updateLedgerFiscal(member1.getId(), createdLedgerPIDLedger1, failFiscalUpdate))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.FISCAL_OVER_DAY.getMessage());
 	}
@@ -191,14 +192,14 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("가계부 삭제 실패_내 소유가 아닌 가계부")
 	void deleteLedger_NotOwner() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
-		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2.getId(), ledgerCreateRequest);
 		
-		assertThatThrownBy(() -> financeCommand.deleteLedger(member1PID, createdLedgerPIDMember2))
+		assertThatThrownBy(() -> financeCommand.deleteLedger(member1.getId(), createdLedgerPIDMember2))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 		
-		assertThatThrownBy(() -> financeCommand.deleteLedger(member2PID, createdLedgerPIDMember1))
+		assertThatThrownBy(() -> financeCommand.deleteLedger(member2.getId(), createdLedgerPIDMember1))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 	}
@@ -206,7 +207,7 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("계정 항목 생성 실패_지원하지 않는 계정 옵션")
 	void createAccount_TypeMismatch() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
 		
 		AccountCreateRequest failAccountCreateRequest = new AccountCreateRequest(
 				AccountType.ASSET,
@@ -215,7 +216,7 @@ public class FinanceCommandUsecaseFailTest {
 				AccountOptionTemplate.VARIABLE_EXPENSE
 		);
 		
-		assertThatThrownBy(() -> financeCommand.createAccount(member1PID, createdLedgerPIDMember1, failAccountCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createAccount(member1.getId(), createdLedgerPIDMember1, failAccountCreateRequest))
 		.isInstanceOf(AccountException.class)
 		.hasMessageContaining(AccountErrorCode.ACCOUNT_TYPE_MISMATH.getMessage());
 	}
@@ -223,7 +224,7 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("계정 항목 수정 실패_지원하지 않는 계정 옵션")
 	void updateAccount_TypeMismatch() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
 		
 		AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
 				AccountType.ASSET,
@@ -233,7 +234,7 @@ public class FinanceCommandUsecaseFailTest {
 		);
 		
 		PublicId createdAccountPID = new PublicId(
-				financeCommand.createAccount(member1PID, createdLedgerPIDMember1, accountCreateRequest).accountPublicId()
+				financeCommand.createAccount(member1.getId(), createdLedgerPIDMember1, accountCreateRequest).accountPublicId()
 		);
 		
 		em.flush();
@@ -254,7 +255,7 @@ public class FinanceCommandUsecaseFailTest {
 		em.clear();
 		
 		assertThatThrownBy(() -> financeCommand.updateAccount(
-				member1PID,
+				member1.getId(),
 				createdLedgerPIDMember1,
 				account.getAccountPublicId(),
 				failAccountUpdateRequest
@@ -266,8 +267,8 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("계정 항목 삭제 실패_다른 가계부 소유주")
 	void deactivateAccount_NotLedgerOnwer() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
-		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2.getId(), ledgerCreateRequest);
 		
 		AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
 				AccountType.ASSET,
@@ -276,14 +277,14 @@ public class FinanceCommandUsecaseFailTest {
 				AccountOptionTemplate.BANK_ACCOUNT
 		);
 		
-		PublicId accountPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, accountCreateRequest);
-		PublicId accountPIDMember2 = createAccount(member2PID, createdLedgerPIDMember2, accountCreateRequest);
+		PublicId accountPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, accountCreateRequest);
+		PublicId accountPIDMember2 = createAccount(member2.getId(), createdLedgerPIDMember2, accountCreateRequest);
 		
-		assertThatThrownBy(() -> financeCommand.deactivateAccount(member1PID, createdLedgerPIDMember2, accountPIDMember1))
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member1.getId(), createdLedgerPIDMember2, accountPIDMember1))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 		
-		assertThatThrownBy(() -> financeCommand.deactivateAccount(member2PID, createdLedgerPIDMember1, accountPIDMember2))
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member2.getId(), createdLedgerPIDMember1, accountPIDMember2))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 	}
@@ -291,8 +292,8 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("계정 항목 삭제 실패_다른 소유주의 계정 항목")
 	void deactivateAccount_NotAccountOwner() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
-		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2.getId(), ledgerCreateRequest);
 		
 		AccountCreateRequest accountCreateRequest = new AccountCreateRequest(
 				AccountType.ASSET,
@@ -301,14 +302,14 @@ public class FinanceCommandUsecaseFailTest {
 				AccountOptionTemplate.BANK_ACCOUNT
 		);
 		
-		PublicId accountPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, accountCreateRequest);
-		PublicId accountPIDMember2 = createAccount(member2PID, createdLedgerPIDMember2, accountCreateRequest);
+		PublicId accountPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, accountCreateRequest);
+		PublicId accountPIDMember2 = createAccount(member2.getId(), createdLedgerPIDMember2, accountCreateRequest);
 		
-		assertThatThrownBy(() -> financeCommand.deactivateAccount(member1PID, createdLedgerPIDMember1, accountPIDMember2))
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member1.getId(), createdLedgerPIDMember1, accountPIDMember2))
 		.isInstanceOf(AccountException.class)
 		.hasMessageContaining(AccountErrorCode.ACCOUNT_NOT_FOUND.getMessage());
 		
-		assertThatThrownBy(() -> financeCommand.deactivateAccount(member2PID, createdLedgerPIDMember2, accountPIDMember1))
+		assertThatThrownBy(() -> financeCommand.deactivateAccount(member2.getId(), createdLedgerPIDMember2, accountPIDMember1))
 		.isInstanceOf(AccountException.class)
 		.hasMessageContaining(AccountErrorCode.ACCOUNT_NOT_FOUND.getMessage());
 	}
@@ -316,8 +317,8 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("거래 입력 실패_다른 소유주의 가계부")
 	void createJournal_NotOwnerLedger() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
-		PublicId createdLedgerPIDMember2 = createLedger(member2PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
+		PublicId createdLedgerPIDMember2 = createLedger(member2.getId(), ledgerCreateRequest);
 		
 		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
 				AccountType.ASSET,
@@ -333,8 +334,8 @@ public class FinanceCommandUsecaseFailTest {
 				AccountOptionTemplate.VARIABLE_EXPENSE
 		);
 		
-		PublicId creditPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, creditCreateRequest);
-		PublicId debitPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, debitCreateRequest);
+		PublicId creditPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, creditCreateRequest);
+		PublicId debitPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, debitCreateRequest);
 		
 		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
 				55000L,
@@ -343,11 +344,11 @@ public class FinanceCommandUsecaseFailTest {
 				creditPIDMember1
 		);
 		
-		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember2, journalCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createJournal(member1.getId(), createdLedgerPIDMember2, journalCreateRequest))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 		
-		assertThatThrownBy(() -> financeCommand.createJournal(member2PID, createdLedgerPIDMember1, journalCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createJournal(member2.getId(), createdLedgerPIDMember1, journalCreateRequest))
 		.isInstanceOf(LedgerException.class)
 		.hasMessageContaining(LedgerErrorCode.LEDGER_NOT_FOUND.getMessage());
 	}
@@ -355,7 +356,7 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("거래 입력 실패_존재하지 않는 계정")
 	void createJournal_NotFoundAccount() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
 		
 		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
 				55000L,
@@ -364,7 +365,7 @@ public class FinanceCommandUsecaseFailTest {
 				member2PID
 		);
 		
-		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createJournal(member1.getId(), createdLedgerPIDMember1, journalCreateRequest))
 		.isInstanceOf(AccountException.class)
 		.hasMessageContaining(AccountErrorCode.ACCOUNT_NOT_FOUND.getMessage());
 	}
@@ -372,7 +373,7 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("거래 입력 실패_계정 선택 안한 요청")
 	void createJournal_InvalidJournalEntryCount() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
 		
 		JournalCreateRequest journalCreateRequest = new JournalCreateRequest(
 				LocalDate.of(2026, 5, 1),
@@ -382,7 +383,7 @@ public class FinanceCommandUsecaseFailTest {
 				Map.of()
 		);
 		
-		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createJournal(member1.getId(), createdLedgerPIDMember1, journalCreateRequest))
 		.isInstanceOf(FinanceException.class)
 		.hasMessageContaining(FinanceErrorCode.INVALID_JOURNAL_ENTRY_COUNT.getMessage());
 	}
@@ -390,7 +391,7 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("거래 입력 실패_멤버 비활성화 계정")
 	void createJournal_MemberDeactivate() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
 		
 		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
 				AccountType.ASSET,
@@ -406,8 +407,8 @@ public class FinanceCommandUsecaseFailTest {
 				AccountOptionTemplate.VARIABLE_EXPENSE
 		);
 		
-		PublicId creditPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, creditCreateRequest);
-		PublicId debitPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, debitCreateRequest);
+		PublicId creditPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, creditCreateRequest);
+		PublicId debitPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, debitCreateRequest);
 		
 		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
 				55000L,
@@ -418,7 +419,7 @@ public class FinanceCommandUsecaseFailTest {
 		
 		memberDeactivate(member1PID);
 		
-		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createJournal(member1.getId(), createdLedgerPIDMember1, journalCreateRequest))
 		.isInstanceOf(MemberException.class)
 		.hasMessageContaining(MemberExceptionCode.MEMBER_CANNOT_USE_SERVICE.getMessage());
 	}
@@ -426,7 +427,7 @@ public class FinanceCommandUsecaseFailTest {
 	@Test
 	@DisplayName("거래 입력 실패_삭제된 상태의 계정 포함")
 	void createJournal_DeactivateAccount() {
-		PublicId createdLedgerPIDMember1 = createLedger(member1PID, ledgerCreateRequest);
+		PublicId createdLedgerPIDMember1 = createLedger(member1.getId(), ledgerCreateRequest);
 		
 		AccountCreateRequest creditCreateRequest = new AccountCreateRequest(
 				AccountType.ASSET,
@@ -442,8 +443,8 @@ public class FinanceCommandUsecaseFailTest {
 				AccountOptionTemplate.VARIABLE_EXPENSE
 		);
 		
-		PublicId creditPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, creditCreateRequest);
-		PublicId debitPIDMember1 = createAccount(member1PID, createdLedgerPIDMember1, debitCreateRequest);
+		PublicId creditPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, creditCreateRequest);
+		PublicId debitPIDMember1 = createAccount(member1.getId(), createdLedgerPIDMember1, debitCreateRequest);
 		
 		JournalCreateRequest journalCreateRequest = createJournalCreateRequest(
 				55000L,
@@ -452,12 +453,12 @@ public class FinanceCommandUsecaseFailTest {
 				creditPIDMember1
 		);
 		
-		financeCommand.deactivateAccount(member1PID, createdLedgerPIDMember1, debitPIDMember1);
+		financeCommand.deactivateAccount(member1.getId(), createdLedgerPIDMember1, debitPIDMember1);
 		
 		em.flush();
 		em.clear();
 		
-		assertThatThrownBy(() -> financeCommand.createJournal(member1PID, createdLedgerPIDMember1, journalCreateRequest))
+		assertThatThrownBy(() -> financeCommand.createJournal(member1.getId(), createdLedgerPIDMember1, journalCreateRequest))
 		.isInstanceOf(AccountException.class)
 		.hasMessageContaining(AccountErrorCode.ACCOUNT_DEACTIVATE.getMessage());
 	}
@@ -469,12 +470,12 @@ public class FinanceCommandUsecaseFailTest {
 		));
 	}
 	
-	private PublicId createAccount(PublicId memberPublicId, PublicId ledgerPublicId, AccountCreateRequest accountCreate) {
-		return new PublicId(financeCommand.createAccount(memberPublicId, ledgerPublicId, accountCreate).accountPublicId());
+	private PublicId createAccount(Long memberId, PublicId ledgerPublicId, AccountCreateRequest accountCreate) {
+		return new PublicId(financeCommand.createAccount(memberId, ledgerPublicId, accountCreate).accountPublicId());
 	}
 	
-	private PublicId createLedger(PublicId memberPublicId, LedgerCreateRequest ledgerCreateRequest) {
-		PublicId createdLedgerPID = new PublicId(financeCommand.createLedger(memberPublicId, ledgerCreateRequest).ledgerPublicId());
+	private PublicId createLedger(Long memberId, LedgerCreateRequest ledgerCreateRequest) {
+		PublicId createdLedgerPID = new PublicId(financeCommand.createLedger(memberId, ledgerCreateRequest).ledgerPublicId());
 		
 		em.flush();
 		em.clear();

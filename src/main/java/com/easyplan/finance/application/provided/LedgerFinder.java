@@ -6,5 +6,5 @@ import com.easyplan.finance.domain.ledger.Ledger;
 public interface LedgerFinder {
 	Ledger findByLedger(PublicId ledgerPublicId);
 	
-	Ledger findByLedgerOwner(PublicId memberPublicId, PublicId ledgerPublicId);
+	Ledger findByLedgerOwner(Long memberId, PublicId ledgerPublicId);
 }

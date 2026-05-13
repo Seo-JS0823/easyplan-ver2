@@ -92,17 +92,17 @@ public class FinanceQueryTest {
 				List.of()
 		);
 		
-		ledgerPID = new PublicId(financeCommand.createLedger(memberPID, ledgerCreateRequest).ledgerPublicId());
+		ledgerPID = new PublicId(financeCommand.createLedger(member.getId(), ledgerCreateRequest).ledgerPublicId());
 		
 		em.flush();
 		em.clear();
 		
-		ledger = ledgerFinder.findByLedgerOwner(memberPID, ledgerPID);
+		ledger = ledgerFinder.findByLedgerOwner(member.getId(), ledgerPID);
 		
-		assPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.assetAccountCreateRequest()).accountPublicId());
-		incPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.incomeAccountCreateRequest()).accountPublicId());
-		expPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.expenseAccountCreateRequest()).accountPublicId());
-		liaPID = new PublicId(financeCommand.createAccount(memberPID, ledgerPID, FinanceFix.liabilitiesAccountCreateRequest()).accountPublicId());
+		assPID = new PublicId(financeCommand.createAccount(member.getId(), ledgerPID, FinanceFix.assetAccountCreateRequest()).accountPublicId());
+		incPID = new PublicId(financeCommand.createAccount(member.getId(), ledgerPID, FinanceFix.incomeAccountCreateRequest()).accountPublicId());
+		expPID = new PublicId(financeCommand.createAccount(member.getId(), ledgerPID, FinanceFix.expenseAccountCreateRequest()).accountPublicId());
+		liaPID = new PublicId(financeCommand.createAccount(member.getId(), ledgerPID, FinanceFix.liabilitiesAccountCreateRequest()).accountPublicId());
 		
 		em.flush();
 		em.clear();
@@ -121,7 +121,7 @@ public class FinanceQueryTest {
 		em.flush();
 		em.clear();
 		
-		LedgerAssetSummary result = financeQuery.getNetWorthSummary(memberPID, ledgerPID);
+		LedgerAssetSummary result = financeQuery.getNetWorthSummary(member.getId(), ledgerPID);
 		
 		assertThat(result.totalAsset()).isEqualTo(0L);
 		assertThat(result.totalLiabilities()).isEqualTo(1000000L);
@@ -130,7 +130,7 @@ public class FinanceQueryTest {
 		System.out.println(result);
 		
 		// ms 측정
-		financeQuery.getNetWorthSummary(memberPID, ledgerPID);
+		financeQuery.getNetWorthSummary(member.getId(), ledgerPID);
 	}
 	
 	@Test
@@ -147,7 +147,7 @@ public class FinanceQueryTest {
 		em.flush();
 		em.clear();
 		
-		MonthlyAssetSummary result = financeQuery.getMonthlyCashSummary(memberPID, ledgerPID, YearMonth.of(2026, 4));
+		MonthlyAssetSummary result = financeQuery.getMonthlyCashSummary(member.getId(), ledgerPID, YearMonth.of(2026, 4));
 		
 		assertThat(result.monthlyTotalExpense()).isEqualTo(2000000L);
 		assertThat(result.monthlyTotalIncome()).isEqualTo(1000000L);
@@ -161,7 +161,7 @@ public class FinanceQueryTest {
 				accountFinder.findAccount(ledger, liaPID)
 		);
 		
-		financeCommand.createJournal(memberPID, ledgerPID, request);
+		financeCommand.createJournal(member.getId(), ledgerPID, request);
 	}
 	
 	private void createJournalExpenseFromAsset() {
@@ -170,7 +170,7 @@ public class FinanceQueryTest {
 				accountFinder.findAccount(ledger, assPID)
 		);
 		
-		financeCommand.createJournal(memberPID, ledgerPID, request);
+		financeCommand.createJournal(member.getId(), ledgerPID, request);
 	}
 	
 	private void createJournalIncome() {
@@ -179,7 +179,7 @@ public class FinanceQueryTest {
 				accountFinder.findAccount(ledger, incPID)
 		);
 		
-		financeCommand.createJournal(memberPID, ledgerPID, request);
+		financeCommand.createJournal(member.getId(), ledgerPID, request);
 	}
 	
 	

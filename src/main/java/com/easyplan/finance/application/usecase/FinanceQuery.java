@@ -25,15 +25,15 @@ public class FinanceQuery {
 	private final SummaryReader summaryReader;
 	
 	@TraceTime
-	public LedgerAssetSummary getNetWorthSummary(PublicId memberPublicId, PublicId ledgerPublicId) {
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+	public LedgerAssetSummary getNetWorthSummary(Long ownerId, PublicId ledgerPublicId) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		return summaryReader.currentAssetSummary(ledger.getId());
 	}
 	
 	@TraceTime
-	public MonthlyAssetSummary getMonthlyCashSummary(PublicId memberPublicId, PublicId ledgerPublicId, YearMonth month) {
-		Ledger ledger = ledgerFinder.findByLedgerOwner(memberPublicId, ledgerPublicId);
+	public MonthlyAssetSummary getMonthlyCashSummary(Long ownerId, PublicId ledgerPublicId, YearMonth month) {
+		Ledger ledger = ledgerFinder.findByLedgerOwner(ownerId, ledgerPublicId);
 		
 		LocalDate startDate = ledger.fiscalStartDate(month);
 		LocalDate endDate = ledger.fiscalEndDate(month);
