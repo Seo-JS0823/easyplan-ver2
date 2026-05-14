@@ -4,8 +4,9 @@ import java.time.LocalDate;
 
 import org.springframework.stereotype.Repository;
 
+import com.easyplan._global.persistence.QueryDslUtil;
 import com.easyplan._shared.annotation.TraceTime;
-import com.easyplan.finance.application.required.query.SummaryReader;
+import com.easyplan.finance.application.required.query.NetWorthReader;
 import com.easyplan.finance.application.usecase.response.query.LedgerAssetSummary;
 import com.easyplan.finance.application.usecase.response.query.MonthlyAssetSummary;
 import com.easyplan.finance.domain.EntrySide;
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class SummaryReaderQueryDSL implements SummaryReader {
+public class NetWorthReaderQueryDSL implements NetWorthReader {
 
 	private final JPAQueryFactory qf;
 	
@@ -65,13 +66,9 @@ public class SummaryReaderQueryDSL implements SummaryReader {
 				)
 				.fetchOne();
 		
-		long asset = result == null || result.get(totalAsset) == null
-				? 0L
-				: result.get(totalAsset);
+		long asset = QueryDslUtil.getLongOrZero(result, totalAsset);
 		
-		long liabilities = result == null || result.get(totalLiabilities) == null
-				? 0L
-				: result.get(totalLiabilities);
+		long liabilities = QueryDslUtil.getLongOrZero(result, totalLiabilities);
 		
 		long netWorth = asset - liabilities;
 		
@@ -103,13 +100,9 @@ public class SummaryReaderQueryDSL implements SummaryReader {
 				)
 				.fetchOne();
 		
-		long income = result == null || result.get(monthlyTotalIncome) == null
-				? 0L
-				: result.get(monthlyTotalIncome);
+		long income = QueryDslUtil.getLongOrZero(result, monthlyTotalIncome);
 		
-		long expense = result == null || result.get(monthlyTotalExpense) == null
-				? 0L
-				: result.get(monthlyTotalExpense);
+		long expense = QueryDslUtil.getLongOrZero(result, monthlyTotalExpense);
 		
 		return new MonthlyAssetSummary(income, expense);
 	}

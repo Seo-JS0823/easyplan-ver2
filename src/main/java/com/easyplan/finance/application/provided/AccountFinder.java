@@ -26,4 +26,6 @@ public interface AccountFinder {
 	List<Account> findByLedger(Ledger ledger);
 	
 	Account findActiveAccountOwner(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId);
+	
+	List<Account> findActiveAccountOwnerByLedger(Long ownerId, PublicId ledgerPublicId);
 }

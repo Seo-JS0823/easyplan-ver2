@@ -1,5 +1,7 @@
 [대시보드 데이터]
-- 월별 총 수입 / 총 지출
-    - MonthlyAssetSummary
-- 순자산, 총자산, 총지출
-    - LedgerAssetSummary
+- NetWorthReader Interface
+	- 월별 총 수입 / 총 지출
+		- MonthlyAssetSummary
+	- 순자산, 총자산, 총지출
+		- LedgerAssetSummary
+		

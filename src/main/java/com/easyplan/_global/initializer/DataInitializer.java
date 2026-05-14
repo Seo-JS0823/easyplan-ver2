@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.easyplan.finance.application.required.repository.AccountOptionRepository;
 import com.easyplan.finance.domain.account.AccountOption;
 import com.easyplan.finance.domain.account.AccountOptionTemplate;
+import com.easyplan.member.application.required.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import com.easyplan.finance.application.usecase.response.query.LedgerAssetSummary;
 import com.easyplan.finance.application.usecase.response.query.MonthlyAssetSummary;
 
-public interface SummaryReader {
+public interface NetWorthReader {
 	/*
 	 * 1. 현재 자산 상황 (순자산, 총자산, 총부채)
 	 *      - 메서드 이름 : currentAssetSummary

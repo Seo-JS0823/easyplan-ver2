@@ -40,6 +40,10 @@ import lombok.NoArgsConstructor;
 				@Index(
 						name = "idx_ledger_tdate_id",
 						columnList = "ledger_id, transaction_date, id"
+				),
+				@Index(
+						name = "idx_ledger_type_tdate",
+						columnList = "ledger_id, transaction_type, transaction_date"
 				)
 		}
 )

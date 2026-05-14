@@ -1,6 +1,7 @@
 package com.easyplan.finance.application.service;
 
 import java.time.YearMonth;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,13 @@ public class BudgetFinderService implements BudgetFinder {
 		
 		return budgetRepo.findByAccountAndPeriod(account, period)
 				.orElseThrow(() -> new BudgetException(BudgetErrorCode.BUDGET_NOT_FOUND));
+	}
+
+	@Override
+	public List<Budget> findBudgetByLedger(Long ownerId, PublicId ledgerPublicId, YearMonth period) {
+		List<Account> accounts = accountFinder.findActiveAccountOwnerByLedger(ownerId, ledgerPublicId);
+		
+		return budgetRepo.findBudgetList(accounts, period);
 	}
 
 }

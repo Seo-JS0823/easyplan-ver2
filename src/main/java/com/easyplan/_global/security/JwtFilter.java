@@ -78,12 +78,8 @@ public class JwtFilter extends OncePerRequestFilter {
 	}
 	
 	private Member findMember(TokenClaims claims) {
-		System.out.println("JWTFILTER: MEMBER_PUBLIC_ID: " + claims.publicId().publicId());
-		
 		try {
 			Member member =  memberFinder.findByPublicId(claims.publicId());
-			
-			System.out.println("MEMBER_ID:" + member.getId());
 			
 			return member;
 		} catch(RuntimeException e) {

@@ -22,6 +22,10 @@ public class MemberDetails implements UserDetails {
 		return member;
 	}
 	
+	public Long getMemberId() {
+		return member.memberId();
+	}
+	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return member.authorities();

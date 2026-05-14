@@ -1,5 +1,8 @@
 package com.easyplan.finance.domain.account;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -96,6 +99,14 @@ public class Account extends BaseEntity {
 		if(this.status != AccountStatus.ACTIVE) {
 			throw new AccountException(AccountErrorCode.ACCOUNT_DEACTIVATE);
 		}
+	}
+	
+	public LocalDate getFiscalStartDate(YearMonth month) {
+		return this.ledger.fiscalStartDate(month);
+	}
+	
+	public LocalDate getFiscalEndDate(YearMonth month) {
+		return this.ledger.fiscalEndDate(month);
 	}
 	
 }

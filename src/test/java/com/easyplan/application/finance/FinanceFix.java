@@ -1,6 +1,7 @@
 package com.easyplan.application.finance;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import com.easyplan.finance.domain.account.Account;
 import com.easyplan.finance.domain.account.AccountOptionTemplate;
 import com.easyplan.finance.domain.account.AccountType;
 import com.easyplan.finance.domain.account.request.AccountRequest.AccountCreateRequest;
+import com.easyplan.finance.domain.budget.request.BudgetCreateRequest;
 import com.easyplan.finance.domain.journal.TransactionType;
 import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateRequest;
 import com.easyplan.finance.domain.ledger.LedgerType;
@@ -52,6 +54,15 @@ public class FinanceFix {
 		);
 	}
 	
+	public static AccountCreateRequest expenseAccountCreateRequest(String accountName) {
+		return new AccountCreateRequest(
+				AccountType.EXPENSE,
+				accountName,
+				"메모",
+				AccountOptionTemplate.VARIABLE_EXPENSE
+				);
+	}
+	
 	public static AccountCreateRequest incomeAccountCreateRequest() {
 		return new AccountCreateRequest(
 				AccountType.INCOME,
@@ -80,6 +91,13 @@ public class FinanceFix {
 						EntrySide.DEBIT, debit.getAccountPublicId().publicId(),
 						EntrySide.CREDIT, credit.getAccountPublicId().publicId()
 				)
+		);
+	}
+	
+	public static BudgetCreateRequest budgetCreateRequest() {
+		return new BudgetCreateRequest(
+				YearMonth.of(2026, 4),
+				1_000_000L
 		);
 	}
 }
