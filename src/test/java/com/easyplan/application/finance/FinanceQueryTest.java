@@ -2,8 +2,10 @@ package com.easyplan.application.finance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.easyplan._shared.domain.PublicId;
+import com.easyplan.finance.application.usecase.response.query.MonthlyTrendResponse.MonthlyTrendElement;
+import com.easyplan.finance.domain.EntrySide;
 import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.provided.LedgerFinder;
 import com.easyplan.finance.application.usecase.FinanceCommand;
@@ -25,6 +29,7 @@ import com.easyplan.finance.domain.journal.request.JournalRequest.JournalCreateR
 import com.easyplan.finance.domain.ledger.Ledger;
 import com.easyplan.finance.domain.ledger.LedgerType;
 import com.easyplan.finance.domain.ledger.request.LedgerCreateRequest;
+import com.easyplan.finance.domain.ledger.request.LedgerUpdateRequest.LedgerFiscalUpdate;
 import com.easyplan.fixture.MemberFix;
 import com.easyplan.member.application.provided.MemberCommand;
 import com.easyplan.member.domain.Member;
@@ -153,6 +158,70 @@ public class FinanceQueryTest {
 		assertThat(result.monthlyTotalIncome()).isEqualTo(1000000L);
 	}
 	
+	@Test
+	@DisplayName("기간 손익")
+	void monthlyNetWorthTrend() {
+		financeCommand.updateLedgerFiscal(member.getId(), ledgerPID, new LedgerFiscalUpdate(10));
+		
+		// 준비
+		financeCommand.updateLedgerFiscal(member.getId(), ledgerPID, new LedgerFiscalUpdate(10));
+		
+		em.flush();
+		em.clear();
+		
+		createJournal(
+				TransactionType.INCOME,
+				LocalDate.of(2026, 4, 20),
+				1_000_000L,
+				assPID,
+				incPID
+		);
+		createJournal(
+				TransactionType.EXPENSE,
+				LocalDate.of(2026, 5, 9),
+				200_000L,
+				expPID,
+				assPID
+		);
+		createJournal(
+				TransactionType.INCOME,
+				LocalDate.of(2026, 5, 10),
+				500_000L,
+				assPID,
+				incPID
+		);
+		createJournal(
+				TransactionType.EXPENSE,
+				LocalDate.of(2026, 6, 1),
+				300_000L,
+				expPID,
+				liaPID
+		);
+		
+		em.flush();
+		em.clear();
+		
+		// 실행
+		List<MonthlyTrendElement> result = financeQuery.getMonthlyNetWorthTrend(member.getId(), ledgerPID, YearMonth.of(2026, 5), 2);
+		
+		// 결과
+		assertThat(result).hasSize(2);
+		
+		MonthlyTrendElement april = result.get(0);
+		assertThat(april.period()).isEqualTo(YearMonth.of(2026, 4));
+		assertThat(april.netWorth()).isEqualTo(800_000L);
+		assertThat(april.totalIncome()).isEqualTo(1_000_000L);
+		assertThat(april.totalExpense()).isEqualTo(200_000L);
+		assertThat(april.profitRate()).isEqualTo(80L);
+		
+		MonthlyTrendElement may = result.get(1);
+		assertThat(may.period()).isEqualTo(YearMonth.of(2026, 5));
+		assertThat(may.netWorth()).isEqualTo(1_000_000L);
+		assertThat(may.totalIncome()).isEqualTo(500_000L);
+		assertThat(may.totalExpense()).isEqualTo(300_000L);
+		assertThat(may.profitRate()).isEqualTo(40L);
+	}
+	
 	
 	
 	private void createJournalExpenseFromLiabilities() {
@@ -177,6 +246,21 @@ public class FinanceQueryTest {
 		JournalCreateRequest request = FinanceFix.journalCreate(TransactionType.INCOME,
 				accountFinder.findAccount(ledger, assPID),
 				accountFinder.findAccount(ledger, incPID)
+		);
+		
+		financeCommand.createJournal(member.getId(), ledgerPID, request);
+	}
+	
+	private void createJournal(TransactionType type, LocalDate date, Long amount, PublicId debitPID, PublicId creditPID) {
+		JournalCreateRequest request = new JournalCreateRequest(
+				date,
+				amount,
+				"memo",
+				type,
+				Map.of(
+						EntrySide.DEBIT, debitPID.publicId(),
+						EntrySide.CREDIT, creditPID.publicId()
+				)
 		);
 		
 		financeCommand.createJournal(member.getId(), ledgerPID, request);

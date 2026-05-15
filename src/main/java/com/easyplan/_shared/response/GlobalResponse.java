@@ -6,6 +6,10 @@ public record GlobalResponse<T>(
 		T data,
 		ErrorResponse error) {
 	
+	public static <T> GlobalResponse<T> ok(T data) {
+		return new GlobalResponse<>(true, null, data, null);
+	}
+	
 	public static <T> GlobalResponse<T> ok(String message, T data) {
 		return new GlobalResponse<>(true, message, data, null);
 	}

@@ -1,4 +1,4 @@
-package com.easyplan.finance.adapter.webapi;
+package com.easyplan.finance.adapter.webapi.command;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

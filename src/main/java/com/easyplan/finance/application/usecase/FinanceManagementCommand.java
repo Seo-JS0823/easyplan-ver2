@@ -5,6 +5,7 @@ import java.time.YearMonth;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.easyplan._shared.annotation.TraceTime;
 import com.easyplan._shared.domain.PublicId;
 import com.easyplan.finance.application.provided.AccountFinder;
 import com.easyplan.finance.application.provided.BudgetCommand;
@@ -26,6 +27,7 @@ public class FinanceManagementCommand {
 	private final BudgetCommand budgetCommand;
 	
 	// 예산 생성
+	@TraceTime
 	public BudgetCreateResponse createBudget(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId, BudgetCreateRequest budgetCreate) {
 		Account account = findAccount(ownerId, ledgerPublicId, accountPublicId);
 		
@@ -35,6 +37,7 @@ public class FinanceManagementCommand {
 	}
 	
 	// 예산 수정
+	@TraceTime
 	public BudgetUpdateResponse updateBudget(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId, YearMonth period, BudgetUpdateRequest budgetUpdate) {
 		Account account = findAccount(ownerId, ledgerPublicId, accountPublicId);
 		
@@ -44,6 +47,7 @@ public class FinanceManagementCommand {
 	}
 	
 	// 예산 삭제
+	@TraceTime
 	public void deleteBudget(Long ownerId, PublicId ledgerPublicId, PublicId accountPublicId, YearMonth period) {
 		Account account = findAccount(ownerId, ledgerPublicId, accountPublicId);
 		
